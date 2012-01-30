@@ -207,6 +207,7 @@ class Noobhack:
         elif self.options.debug:
             return player.Player(), dungeon.Dungeon() 
         else:
+            pass
             raise RuntimeError(
                 "NetHack is trying to restore a game file, but noobhack " + 
                 "doesn't have any memory of this game. While noobhack will " +

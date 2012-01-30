@@ -36,10 +36,7 @@ class Brain:
 
     def sucker(self):
         """ 
-        Return whether or not the player is considered a 'sucker'. A level 14 
-        or lower tourists or anyone wearing a shirt with no armor or cloak over
-        it. Confers a 33% penalty to the price of an object. Necessary when 
-        price identifying.
+        Return whether or not the player is considered a 'sucker'. A level 14 or lower tourists or anyone wearing a shirt with no armor or cloak over it. Confers a 33% penalty to the price of an object. Necessary when price identifying.
         """
         return False
 
@@ -204,14 +201,14 @@ class Brain:
         Callback attached to the output proxy.
         """
 
-        self._dispatch_status_events(data)
-        self._dispatch_intrinsic_events(data)
+        #self._dispatch_status_events(data)
+        #self._dispatch_intrinsic_events(data)
         self._dispatch_turn_change_event()
-        self._dispatch_trap_door_event(data)
-        self._dispatch_level_change_event()
-        self._dispatch_level_feature_events(data)
-        self._dispatch_branch_change_event()
-        self._dispatch_shop_entered_event(data)
+        #self._dispatch_trap_door_event(data)
+        #self._dispatch_level_change_event()
+        #self._dispatch_level_feature_events(data)
+        #self._dispatch_branch_change_event()
+        #self._dispatch_shop_entered_event(data)
         self._dispatch_move_event()
         
         if "--More--" not in self.term.display[self.term.cursor()[1]]:
