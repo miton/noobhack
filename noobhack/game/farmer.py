@@ -192,6 +192,6 @@ class Farmer:
         self.abort = True
         logging.error("aborting due to a broken fort")
     
-    def _see_no_monster_hander(self, event):
+    def _see_no_monster_handler(self, event):
         self.pending_input.append('.')
  
