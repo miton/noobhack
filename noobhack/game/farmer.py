@@ -114,11 +114,12 @@ class Farmer:
               self.mode = 'sac'
               self.kill_count = 0
            else:
-              self.mode = 'split'
-              self.kill_count = 0
+              pass
+              #self.mode = 'split'
+              #self.kill_count = 0
         elif self.mode == 'split':
            self.mode = 'kill'
-           self.pending_input.append('w')
+           #self.pending_input.append('w')
         self.named = False
  
     def _sacrifice_prompt_handler(self, event, value):
