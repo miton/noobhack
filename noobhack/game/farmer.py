@@ -3,6 +3,7 @@ import logging
 import base64
 import re
 from struct import pack
+from random import random
 
 altar_pos = (69,18)
 stash_pos = (70,19)
@@ -67,7 +68,10 @@ class Farmer:
 	         if self.hungry:
                     self.pending_input.append('e')
                  elif self.altar_free:
-                    self.pending_input.append('.')
+                    if random() < .10: #so we don't wait forever with scare monster on altar, plus so we get rations even when just killing
+                       self.pending_input.append('y')
+                    else:
+                       self.pending_input.append('.')
                  else:
                     if not self.named and self.sac:
                        self.pending_input.append('C')
