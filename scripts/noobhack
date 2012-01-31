@@ -11,7 +11,8 @@ import optparse
 import cPickle as pickle
 
 import vt102 
- 
+
+from time import time 
 from noobhack import telnet, process, proxy
 from noobhack.game import player, dungeon, brain
 
@@ -125,7 +126,10 @@ class Noobhack:
         self.playing = False
         self.reloading = False
 
-        if not os.path.exists(self.noobhack_dir):
+        self.last_input = time()
+        self.pending_input = []
+
+	if not os.path.exists(self.noobhack_dir):
             os.makedirs(self.noobhack_dir, 0755)
 
         self.nethack = self.connect_to_game() 
@@ -263,23 +267,22 @@ class Noobhack:
                 self.mode = "game"
             return False
         elif key == self.toggle_map:
-            self.mode = "map"
+            self.mode = "bot"
             return False
         elif key == "!":
             self.mode = "debug"
             return False
-
     def _game(self, window):
         """
         Run the game loop.
         """
 
-        if self.mode == "map":
-            self.minimap.display(self.dungeon.graph, window, self.toggle_map)
+        #if self.mode == "map":
+            #self.minimap.display(self.dungeon.graph, window, self.toggle_map)
             # Map mode handles it's own input. Make sure that we don't get
             # forever stuck in map mode by toggling back out of it when it's
             # done.
-            self.mode = "game"
+        #    self.mode = "game"
 
         self.game.redraw(window)
         if self.mode == "help":
@@ -294,6 +297,10 @@ class Noobhack:
         available = select.select(
             [self.nethack.fileno(), sys.stdin.fileno()], [], []
         )[0]
+
+	if len(self.pending_input) > 0 and time() > self.last_input + .10 and self.mode == 'bot':
+	    self.game.write(self.pending_input[0])
+	    self.pending_input = self.pending_input[1:]
 
         if sys.stdin.fileno() in available:
             # Do our input logic.

@@ -26,6 +26,15 @@ class Brain:
         self.dlvl = 0
         self.prev_cursor = (0, 0)
 
+        self.hp = None
+        self.failed_sacs = {}
+        self.last_sac = None
+        self.kill_count = 0
+        self.mode = 'kill'
+        self.name_number = 20
+        self.hungry = False
+        self.abort = False
+
     def charisma(self):
         """ Return the player's current charisma """
         line = self._content()[-2]
@@ -75,7 +84,48 @@ class Brain:
                 if match is not None:
                     event.dispatch("status", name, value)
 
-    def _content(self):
+     def _dispatch_kill_events(self, data):
+         match = re.search(r"You kill ([^!]+)", data)
+         if match is not None:
+             event.dispatch("kill", match.group(0))
+
+     def _dispatch_altar_events(self, data):
+         match = re.search("There is an altar to", data)
+         if match is not None:
+             event.dispatch("on_altar")
+
+     def _dispatch_sacrifice_prompt(self, data):
+         match = re.search(r"There (?:is a|are) (.*?)(?: named (.*?)) here; sacrifice it?", data)
+         if match is not None:
+             event.dispatch("sacrifice_prompt", match.groups())
+         match = re.search(r"What do you want to sacrifice? \[(.+) or \?\*\]", data)
+         if match is not None:
+             event.dispatch("sacrifice_prompt_inv", match.group(0)) 
+     
+     def _dispatch_sacrifice_response(self. data):
+         match = re.search(r"(Nothing happens|An object appears at your feet|[^\s]+ seems (?:slightly )mollified|You feel partially absolved|You glimpse a four-leaf clover at your feet|You have a hopeful feeling|You have a feeling of reconciliation)", data)
+         if match is not None:
+             event.dispatch("sacrifice_response", match.group(0))
+
+     def _dispatch_eat_prompt(self, data):
+         match = re.search("There (?:is a|are) (.*?) here; eat (?:it|one)?", data)
+         if match is not None:
+              event.dispatch("eat_prompt", match.group(0))
+         match = re.search(r"What do you want to eat? \[(.+) or \?\*\]", data)
+         if match is not None:
+              event.dispatch("eat_prompt_inv", match.group(0))
+
+     def _dispatch_name_prompt(self, data):
+         match = re.search(r"What do you want to call (.+?)\?", data)
+         if match is not None:
+              event.dispatch("name_prompt", match.group(0))
+
+     def _dispatch_item_pickup(self, data):
+         match = re.search(r"(.) - ([^.]+).", data)
+         if match is not None:
+              event.dispatch("item_pickup", match.group(0), match.group(1))
+
+     def _content(self):
         return [line.translate(ibm) for line 
                 in self.term.display 
                 if len(line.strip()) > 0]
@@ -167,6 +217,35 @@ class Brain:
                 self.turn = turn
                 event.dispatch("turn", self.turn)
 
+    def _dispatch_hp_change_event(self):
+        line = self._get_last_line()
+        match = re.search("HP:(\\d+)", line)
+        if match is not None:
+           hp = int(match.group(0))
+           if hp != self.hp:
+              self.hp = hp
+              event.dispatch("hp_change", hp)
+    
+    def _dispatch_hunger_event(self):
+        line = self._get_last_line()
+        match = re.search("(Hungry|Weak|Fainting|FoodPois|Fainted)", line)
+        if match is not None:
+           hunger = match.group(0)
+           if self.hungry != hunger:
+              self.hungry = hunger
+              event.dispatch("hunger", hunger)
+    
+    def _dispatch_burden_event(self):
+        line = self._get_last_line()
+        match = re.search("(Burdened|Stressed|Strained|Overtaxed)", line)
+        if match is not None:
+           burden = match.group(0)
+           event.dispatch("burden", burden)
+
+    statusline_re = re.compile("(Hungry|Weak...")
+    def _dispatch_statusline_events(self):
+        line = self._get_last_line()
+        
     def _dispatch_shop_entered_event(self, data):
         match = re.search(shops.entrance, data, re.I | re.M)
         if match is not None:
@@ -209,6 +288,9 @@ class Brain:
         #self._dispatch_level_feature_events(data)
         #self._dispatch_branch_change_event()
         #self._dispatch_shop_entered_event(data)
+        self._dispatch_hp_event()
+        self._dispatch_burden_event()
+        self._dispatch_hunger_event()
         self._dispatch_move_event()
         
         if "--More--" not in self.term.display[self.term.cursor()[1]]:
