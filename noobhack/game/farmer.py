@@ -157,7 +157,7 @@ class Farmer:
                   self.hungry = False
                   return
         logging.debug("did not find something to eat!")
-        send.pending_input.append('\r')
+        self.pending_input.append('\r')
 
     def _name_prompt_handler(self, event,value):
         self.pending_input.append(base64.encodestring(pack('<Q',self.name_number).rstrip('\x00')))
@@ -169,8 +169,7 @@ class Farmer:
         self.pending_input.append('a')
 
     def _select_name_prompt_handler(self, event):
-        self.pending_input.append('h')
-        self.pending_input.append('k')
+        self.pending_input.append('y')
         self.pending_input.append(';')
 
     def _wield_prompt_handler(self, event, value):
