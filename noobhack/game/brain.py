@@ -128,6 +128,11 @@ class Brain:
         match = re.search("I see no monster there", data)
         if match:
             event.dispatch("see_no_monster")
+    
+    def _dispatch_unknown_direction_event(self, data):
+        match = re.search('Unknown direction:', data)
+        if match:
+            event.dispatch("unknown_direction")
 
     def _content(self):
         return [line.translate(ibm) for line 
@@ -334,6 +339,7 @@ class Brain:
         self._dispatch_select_prompt_event(data)
         self._dispatch_extended_command_prompt_event()
         self._dispatch_i_see_no_monster_event(data)
+        self._dispatch_unknown_direction_event(data)
 
 	self.seen_teleport = False
         event.dispatch('check_spot', self.char_at(69,18)) 
