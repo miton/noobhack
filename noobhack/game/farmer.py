@@ -127,7 +127,7 @@ class Farmer:
                   self.pending_input.append(c)
                   return
 
-    def _name_prompt_handler(self, event):
+    def _name_prompt_handler(self, event,value):
         self.pending_input.append(base64.encode(self.name_number))
         self.pending_input.append('\r')
         self.name_number += 1
