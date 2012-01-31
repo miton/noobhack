@@ -136,7 +136,10 @@ class Farmer:
                match = re.search("food ration", self.inventory[c])
                if match:
                   self.pending_input.append(c)
+                  self.hungry = False
                   return
+        logging.debug("did not find something to eat!")
+        send.pending_input.append('\r')
 
     def _name_prompt_handler(self, event,value):
         self.pending_input.append(base64.encodestring(pack('<Q',self.name_number).rstrip('\x00')))
