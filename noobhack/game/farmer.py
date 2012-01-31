@@ -50,6 +50,7 @@ class Farmer:
         #events.dispatcher.add_event_listener("", self.__handler)
  
     def _waiting_input_handler(self,event):
+        logging.debug("state: %s kill_count: %d", self.mode, self.kill_count)
         if self.abort:
            del self.pending_input[:]
            return

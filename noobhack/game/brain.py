@@ -291,6 +291,7 @@ class Brain:
         return \
             "To what position do you want to be teleported?" not in first and \
             "Please move the cursor to an unknown object." not in first and \
+            "For instructions type a ?" not in first and \
             self.char_at(*self.term.cursor()) != " " and \
             self.term.cursor()[1] > 0
 
