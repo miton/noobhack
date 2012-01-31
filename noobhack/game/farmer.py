@@ -24,6 +24,7 @@ class Farmer:
         self.cur_location = (0,0)
         self.altar_free = None
         self.named = True
+        self.sac = False
 
     def listen(self):
         events.dispatcher.add_event_listener('waiting_input', self._waiting_input_handler)
@@ -68,7 +69,7 @@ class Farmer:
                  elif self.altar_free:
                     self.pending_input.append('.')
                  else:
-                    if not self.named:
+                    if not self.named and self.sac:
                        self.pending_input.append('C')
                     else:
                        self.pending_input.append('y')
@@ -109,8 +110,12 @@ class Farmer:
         self.kill_count += 1
         self.kill_total += 1
         if self.kill_count >= 5 and self.mode == 'kill':
-           self.mode = 'sac'
-           self.kill_count = 0
+           if self.sac:
+              self.mode = 'sac'
+              self.kill_count = 0
+           else:
+              self.mode = 'split'
+              self.kill_count = 0
         elif self.mode == 'split':
            self.mode = 'kill'
            self.pending_input.append('w')
