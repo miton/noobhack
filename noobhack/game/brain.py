@@ -29,7 +29,8 @@ class Brain:
 
         self.hp = None
         self.seen_teleport = False
-    
+        self.hungry = False
+ 
     def charisma(self):
         """ Return the player's current charisma """
         line = self._content()[-2]
@@ -237,7 +238,7 @@ class Brain:
     
     def _dispatch_hunger_event(self):
         line = self._get_last_line()
-        match = re.search("(Hungry|Weak|Fainting|FoodPois|Fainted)", line)
+        match = re.search("(Hungry|Weak|Fainting|FoodPois|Fainted|Ill)", line)
         if match is not None:
            hunger = match.group(1)
            if self.hungry != hunger:
