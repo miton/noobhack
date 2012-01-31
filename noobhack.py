@@ -278,6 +278,7 @@ class Noobhack:
             else:
                self.mode = "bot"
                del self.pending_input[:]
+               self.farmer.abort = False
                return False
         elif key == "!":
             self.mode = "debug"
@@ -305,7 +306,7 @@ class Noobhack:
         wait_time = 1.0
         # Let's wait until we have something to do...
         logging.debug("%f %s", time(), self.pending_input) 
-	if len(self.pending_input) > 0 and time() > self.last_input + wait_time and self.mode == 'bot':
+	if len(self.pending_input) > 0 and time() > self.last_input + wait_time and self.mode == 'bot' and not self.farmer.abort:
 	    first = self.pending_input.pop(0)
             self.input_proxy.game.write(first)
 	    logging.debug("sending %s, left: %s", first, self.pending_input)

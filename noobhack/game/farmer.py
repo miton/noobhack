@@ -48,6 +48,7 @@ class Farmer:
         events.dispatcher.add_event_listener("check_spot", self._check_spot_handler)
         events.dispatcher.add_event_listener("extended_command_prompt", self._extended_command_prompt_handler)
         events.dispatcher.add_event_listener("fort_broken", self._fort_broken_handler)
+        events.dispatcher.add_event_listener("see_no_monster", self._see_no_monster_handler)
         #events.dispatcher.add_event_listener("", self.__handler)
  
     def _waiting_input_handler(self,event):
@@ -190,5 +191,7 @@ class Farmer:
     def _fort_broken_handler(self, event, value):
         self.abort = True
         logging.error("aborting due to a broken fort")
-
+    
+    def _see_no_monster_hander(self, event):
+        self.pending_input.append('.')
  

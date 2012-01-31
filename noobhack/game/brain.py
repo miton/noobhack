@@ -28,15 +28,8 @@ class Brain:
         self.prev_cursor = (0, 0)
 
         self.hp = None
-        self.failed_sacs = {}
-        self.last_sac = None
-        self.kill_count = 0
-        self.mode = 'kill'
-        self.name_number = 20
-        self.hungry = False
-        self.abort = False
-        self.inventory = {}
-
+        self.seen_teleport = False
+    
     def charisma(self):
         """ Return the player's current charisma """
         line = self._content()[-2]
@@ -130,6 +123,11 @@ class Brain:
     def _dispatch_item_pickup_events(self, data):
          for match in re.finditer(r"(.) - ([^.]+?)\.", data):
               event.dispatch("item_pickup", match.group(1), match.group(2))
+
+    def _dispatch_i_see_no_monster_event(self, data):
+        match = re.search("I see no monster there", data)
+        if match:
+            event.dispatch("see_no_monster")
 
     def _content(self):
         return [line.translate(ibm) for line 
@@ -269,10 +267,11 @@ class Brain:
         match = re.search("To what position do you want to be teleported\?", data)
         if match: 
            event.dispatch("teleport_prompt")
+           self.seen_teleport = True
 
     def _dispatch_select_prompt_event(self, data):
         match = re.search(r"\(For instructions type a \?\)", data)
-        if match:
+        if match and not self.seen_teleport:
            event.dispatch("select_name_prompt")
 
     def _dispatch_name_what_prompt_event(self,data):
@@ -334,6 +333,9 @@ class Brain:
         self._dispatch_name_what_prompt_event(data)
         self._dispatch_select_prompt_event(data)
         self._dispatch_extended_command_prompt_event()
+        self._dispatch_i_see_no_monster_event()
+
+	self.seen_teleport = False
         event.dispatch('check_spot', self.char_at(69,18)) 
         #fort broken event
         if "--More--" not in self.term.display[self.term.cursor()[1]]:
