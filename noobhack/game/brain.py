@@ -333,7 +333,7 @@ class Brain:
         self._dispatch_name_what_prompt_event(data)
         self._dispatch_select_prompt_event(data)
         self._dispatch_extended_command_prompt_event()
-        self._dispatch_i_see_no_monster_event()
+        self._dispatch_i_see_no_monster_event(data)
 
 	self.seen_teleport = False
         event.dispatch('check_spot', self.char_at(69,18)) 
