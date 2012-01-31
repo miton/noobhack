@@ -25,7 +25,8 @@ class Farmer:
         self.cur_location = (0,0)
         self.altar_free = None
         self.named = True
-        self.sac = False
+        self.sac = True
+        self.safe_pray = True
 
     def listen(self):
         events.dispatcher.add_event_listener('waiting_input', self._waiting_input_handler)
@@ -135,12 +136,14 @@ class Farmer:
    
     def _sacrifice_prompt_inv_handler(self, event, value):
         self.pending_input.append('\r')
-        self.pending_input.append('w')
+        #self.pending_input.append('w')
 	self.mode = 'split'
    
     def _sacrifice_response_handler(self, event, value):
         if value == 'Nothing happens':
            self.failed_sacs[self.last_sac] = True
+        elif value == 'You have a feeling of reconciliation':
+           self.safe_pray = True
 
     def _eat_prompt_handler(self, event, value):
         self.pending_input.append('n')
@@ -199,8 +202,13 @@ class Farmer:
         self.pending_input.append('.')
     
     def _extended_command_prompt_handler(self, event):
-        self.pending_input.append('o')
-        self.pending_input.append('\r')
+        if self.safe_pray:
+	   self.pending_input.append('p')
+           self.pending_input.append('\r')
+           self.safe_pray = False
+        else:
+           self.pending_input.append('o')
+           self.pending_input.append('\r')
  
     def _fort_broken_handler(self, event, value):
         self.abort = True
