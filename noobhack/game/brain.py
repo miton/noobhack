@@ -307,6 +307,9 @@ class Brain:
         """
        # logging.debug("brain process " + data)
 
+        if "--More--" in self.term.display[self.term.cursor()[1]]:
+           event.dispatch('more')
+        self._dispatch_teleport_prompt_event(data)
         #self._dispatch_status_events(data)
         #self._dispatch_intrinsic_events(data)
         self._dispatch_turn_change_event()
@@ -328,14 +331,11 @@ class Brain:
         self._dispatch_wield_prompt_event(data)
         self._dispatch_item_pickup_events(data)
         self._dispatch_name_what_prompt_event(data)
-        self._dispatch_teleport_prompt_event(data)
         self._dispatch_select_prompt_event(data)
         self._dispatch_extended_command_prompt_event()
-        
+        event.dispatch('check_spot', char_at((69,18)) 
         #fort broken event
         if "--More--" not in self.term.display[self.term.cursor()[1]]:
             self.prev_cursor = self.term.cursor()
-        else:
-            event.dispatch('more')
         if self.cursor_is_on_player():
             event.dispatch('waiting_input')
