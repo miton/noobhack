@@ -97,7 +97,7 @@ class Brain:
              event.dispatch("on_altar")
 
     def _dispatch_sacrifice_prompt_event(self, data):
-         match = re.search(r"There (?:is a|are \d+) (.*?)(?: named (.*?)) here; sacrifice it\?", data)
+         match = re.search(r"There (?:is a|are \d+) (.*?)(?: named (.*?))? here; sacrifice (it|one)\?", data)
          if match is not None:
              event.dispatch("sacrifice_prompt", match.groups())
          match = re.search(r"What do you want to sacrifice\? \[(.+?) or \?\*\]", data)

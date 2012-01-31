@@ -13,7 +13,7 @@ import cPickle as pickle
 import vt102 
 import logging
 
-from time import time 
+from time import time,sleep 
 from noobhack import telnet, process, proxy
 from noobhack.game import player, dungeon, brain, farmer
 
@@ -302,10 +302,10 @@ class Noobhack:
 
         if self.playing:
             self.save()
-
+        wait_time = 1.0
         # Let's wait until we have something to do...
         logging.debug("%f %s", time(), self.pending_input) 
-	if len(self.pending_input) > 0 and time() > self.last_input + 1.0 and self.mode == 'bot':
+	if len(self.pending_input) > 0 and time() > self.last_input + wait_time and self.mode == 'bot':
 	    first = self.pending_input.pop(0)
             self.input_proxy.game.write(first)
 	    logging.debug("sending %s, left: %s", first, self.pending_input)
@@ -315,7 +315,7 @@ class Noobhack:
         if len(self.pending_input) > 0 and self.mode == 'bot':
            available = select.select(
             [self.nethack.fileno(), sys.stdin.fileno()], [], []
-           ,0)[0]
+           ,wait_time / 2.0)[0]
         else:
            available = select.select(
             [self.nethack.fileno(), sys.stdin.fileno()], [], []
