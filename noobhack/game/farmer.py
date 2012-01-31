@@ -22,7 +22,7 @@ class Farmer:
         self.pending_input = pending
         self.cur_location = (0,0)
         self.altar_free = None
-        self.unnamed = True
+        self.named = True
 
     def listen(self):
         events.dispatcher.add_event_listener('waiting_input', self._waiting_input_handler)

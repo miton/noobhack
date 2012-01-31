@@ -333,7 +333,7 @@ class Brain:
         self._dispatch_name_what_prompt_event(data)
         self._dispatch_select_prompt_event(data)
         self._dispatch_extended_command_prompt_event()
-        event.dispatch('check_spot', char_at((69,18))) 
+        event.dispatch('check_spot', self.char_at(69,18)) 
         #fort broken event
         if "--More--" not in self.term.display[self.term.cursor()[1]]:
             self.prev_cursor = self.term.cursor()
