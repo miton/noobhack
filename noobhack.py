@@ -11,6 +11,7 @@ import optparse
 import cPickle as pickle
 
 import vt102 
+import logging
 
 from time import time 
 from noobhack import telnet, process, proxy
@@ -155,7 +156,7 @@ class Noobhack:
         self.output_proxy.register(self._restore_game_checker)
         self.output_proxy.register(self._game_started_checker)
         self.output_proxy.register(self._quit_or_died_checker)
-
+        
         # Register the `toggle` key to open up the interactive nooback 
         # assistant.
         self.input_proxy.register(self._toggle)
@@ -184,6 +185,7 @@ class Noobhack:
         self.brain = brain.Brain(self.term, self.output_proxy, self.input_proxy)
         self.helper = Helper(self.brain, self.player, self.dungeon)
         self.minimap = Minimap()
+	self.brain._dispatch_hp_change_event()
 
     def _game_started_checker(self, data):
         """
@@ -211,7 +213,8 @@ class Noobhack:
         elif self.options.debug:
             return player.Player(), dungeon.Dungeon() 
         else:
-            pass
+	    return player.Player(), dungeon.Dungeon()
+            """ 
             raise RuntimeError(
                 "NetHack is trying to restore a game file, but noobhack " + 
                 "doesn't have any memory of this game. While noobhack will " +
@@ -220,6 +223,7 @@ class Noobhack:
                 "run nethack and quit your current game, then restart " + 
                 "noobhack."
             )
+	   """
 
     def save(self):
         save_file = open(self.save_file, "w")
@@ -324,6 +328,10 @@ class Noobhack:
 
 if __name__ == "__main__":
     locale.setlocale(locale.LC_ALL, "")
+    
+    logging.basicConfig(filename="noobhack.log",level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+    logging.debug("started noobhack")
 
     hack = Noobhack()
     try:

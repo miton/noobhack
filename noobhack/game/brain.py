@@ -4,9 +4,10 @@ consuming and processing those events in an intelligent way.
 """
 
 import re
+import logging
 
 from noobhack.game.graphics import ibm
-from noobhack.game import shops, status, intrinsics, sounds, dungeon
+from noobhack.game import shops, status, intrinsics, sounds, dungeon #, farmer
 from noobhack.game.events import dispatcher as event
 
 class Brain:
@@ -84,17 +85,17 @@ class Brain:
                 if match is not None:
                     event.dispatch("status", name, value)
 
-     def _dispatch_kill_events(self, data):
+    def _dispatch_kill_events(self, data):
          match = re.search(r"You kill ([^!]+)", data)
          if match is not None:
              event.dispatch("kill", match.group(0))
 
-     def _dispatch_altar_events(self, data):
+    def _dispatch_altar_events(self, data):
          match = re.search("There is an altar to", data)
          if match is not None:
              event.dispatch("on_altar")
 
-     def _dispatch_sacrifice_prompt(self, data):
+    def _dispatch_sacrifice_prompt(self, data):
          match = re.search(r"There (?:is a|are) (.*?)(?: named (.*?)) here; sacrifice it?", data)
          if match is not None:
              event.dispatch("sacrifice_prompt", match.groups())
@@ -102,12 +103,12 @@ class Brain:
          if match is not None:
              event.dispatch("sacrifice_prompt_inv", match.group(0)) 
      
-     def _dispatch_sacrifice_response(self. data):
+    def _dispatch_sacrifice_response(self, data):
          match = re.search(r"(Nothing happens|An object appears at your feet|[^\s]+ seems (?:slightly )mollified|You feel partially absolved|You glimpse a four-leaf clover at your feet|You have a hopeful feeling|You have a feeling of reconciliation)", data)
          if match is not None:
              event.dispatch("sacrifice_response", match.group(0))
 
-     def _dispatch_eat_prompt(self, data):
+    def _dispatch_eat_prompt(self, data):
          match = re.search("There (?:is a|are) (.*?) here; eat (?:it|one)?", data)
          if match is not None:
               event.dispatch("eat_prompt", match.group(0))
@@ -115,17 +116,17 @@ class Brain:
          if match is not None:
               event.dispatch("eat_prompt_inv", match.group(0))
 
-     def _dispatch_name_prompt(self, data):
+    def _dispatch_name_prompt(self, data):
          match = re.search(r"What do you want to call (.+?)\?", data)
          if match is not None:
               event.dispatch("name_prompt", match.group(0))
 
-     def _dispatch_item_pickup(self, data):
+    def _dispatch_item_pickup(self, data):
          match = re.search(r"(.) - ([^.]+).", data)
          if match is not None:
               event.dispatch("item_pickup", match.group(0), match.group(1))
 
-     def _content(self):
+    def _content(self):
         return [line.translate(ibm) for line 
                 in self.term.display 
                 if len(line.strip()) > 0]
@@ -219,12 +220,13 @@ class Brain:
 
     def _dispatch_hp_change_event(self):
         line = self._get_last_line()
-        match = re.search("HP:(\\d+)", line)
+        match = re.search(r"HP:(\d+)", line)
         if match is not None:
-           hp = int(match.group(0))
+           hp = int(match.group(1))
            if hp != self.hp:
               self.hp = hp
               event.dispatch("hp_change", hp)
+        logging.info("hp event check: %", line)
     
     def _dispatch_hunger_event(self):
         line = self._get_last_line()
@@ -242,7 +244,7 @@ class Brain:
            burden = match.group(0)
            event.dispatch("burden", burden)
 
-    statusline_re = re.compile("(Hungry|Weak...")
+    statusline_re = re.compile("(Hungry|Weak)...")
     def _dispatch_statusline_events(self):
         line = self._get_last_line()
         
@@ -279,6 +281,7 @@ class Brain:
         """
         Callback attached to the output proxy.
         """
+        #logging.info("brain process" + repr(data))
 
         #self._dispatch_status_events(data)
         #self._dispatch_intrinsic_events(data)
@@ -288,7 +291,7 @@ class Brain:
         #self._dispatch_level_feature_events(data)
         #self._dispatch_branch_change_event()
         #self._dispatch_shop_entered_event(data)
-        self._dispatch_hp_event()
+        self._dispatch_hp_change_event()
         self._dispatch_burden_event()
         self._dispatch_hunger_event()
         self._dispatch_move_event()

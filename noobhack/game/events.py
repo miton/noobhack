@@ -2,6 +2,8 @@
 The events module is where all events based on gameplay are dispatched.
 """
 
+import logging
+
 class Dispatcher:
     """
     Simple event dispatcher. 
@@ -35,7 +37,8 @@ class Dispatcher:
         """
         Dispatch an event.
         """
-
+        logging.basicConfig(filename="noobhack.log",level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s') 
+        logging.debug("event: %s rest: %s" % (event, repr(*args)))
         for listener in self.listeners.get(event, []):
             listener(event, *args)
 
