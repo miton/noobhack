@@ -80,7 +80,10 @@ class Farmer:
                  if self.altar_free:
                     self.pending_input.append('y')
                  else:
-                    self.pending_input.append('y')
+                    if not self.named:
+                       self.pending_input.append('C')
+                    else:
+                       self.pending_input.append('y')
               elif self.cur_pos == altar_pos:
                  self.pending_input.append('#')
               else:
