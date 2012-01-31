@@ -3,8 +3,8 @@ import logging
 import base64
 import re
 
-altar_pos = (24,50)
-stash_pos = (25,51)
+altar_pos = (69,18)
+stash_pos = (70,19)
 
 class Farmer:
 
