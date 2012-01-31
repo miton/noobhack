@@ -15,7 +15,7 @@ import logging
 
 from time import time 
 from noobhack import telnet, process, proxy
-from noobhack.game import player, dungeon, brain
+from noobhack.game import player, dungeon, brain, farmer
 
 from noobhack.ui.game import *
 from noobhack.ui.helper import *
@@ -185,7 +185,8 @@ class Noobhack:
         self.brain = brain.Brain(self.term, self.output_proxy, self.input_proxy)
         self.helper = Helper(self.brain, self.player, self.dungeon)
         self.minimap = Minimap()
-	self.brain._dispatch_hp_change_event()
+        self.farmer = farmer.Farmer(self.pending_input)
+        self.farmer.listen()
 
     def _game_started_checker(self, data):
         """
@@ -271,8 +272,13 @@ class Noobhack:
                 self.mode = "game"
             return False
         elif key == self.toggle_map:
-            self.mode = "bot"
-            return False
+            if self.mode == "bot":
+               self.mode = "game"
+               return False
+            else:
+               self.mode = "bot"
+               del self.pending_input[:]
+               return False
         elif key == "!":
             self.mode = "debug"
             return False
@@ -298,14 +304,24 @@ class Noobhack:
             self.save()
 
         # Let's wait until we have something to do...
-        available = select.select(
-            [self.nethack.fileno(), sys.stdin.fileno()], [], []
-        )[0]
-
+        logging.debug("%f %s", time(), self.pending_input) 
 	if len(self.pending_input) > 0 and time() > self.last_input + .10 and self.mode == 'bot':
-	    self.game.write(self.pending_input[0])
-	    self.pending_input = self.pending_input[1:]
+	    first = self.pending_input.pop(0)
+            #self.input_proxy.game.write(first)
+	    logging.debug("sending %s, left: %s", first, self.pending_input)
+#            self.pending_input = self.pending_input[1:]
+            self.last_input = time()
 
+        if len(self.pending_input) > 0 and self.mode == 'bot':
+           available = select.select(
+            [self.nethack.fileno(), sys.stdin.fileno()], [], []
+           ,0)[0]
+        else:
+           available = select.select(
+            [self.nethack.fileno(), sys.stdin.fileno()], [], []
+           )[0]
+
+	
         if sys.stdin.fileno() in available:
             # Do our input logic.
             self.input_proxy.proxy()

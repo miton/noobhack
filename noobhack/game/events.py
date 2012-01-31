@@ -38,7 +38,7 @@ class Dispatcher:
         Dispatch an event.
         """
         logging.basicConfig(filename="noobhack.log",level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s') 
-        logging.debug("event: %s rest: %s" % (event, repr(*args)))
+        logging.debug("event: %s rest: %s" % (event, args))
         for listener in self.listeners.get(event, []):
             listener(event, *args)
 

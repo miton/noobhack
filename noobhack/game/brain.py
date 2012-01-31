@@ -7,7 +7,7 @@ import re
 import logging
 
 from noobhack.game.graphics import ibm
-from noobhack.game import shops, status, intrinsics, sounds, dungeon #, farmer
+from noobhack.game import shops, status, intrinsics, sounds, dungeon, farmer
 from noobhack.game.events import dispatcher as event
 
 class Brain:
@@ -35,6 +35,7 @@ class Brain:
         self.name_number = 20
         self.hungry = False
         self.abort = False
+        self.inventory = {}
 
     def charisma(self):
         """ Return the player's current charisma """
@@ -86,45 +87,49 @@ class Brain:
                     event.dispatch("status", name, value)
 
     def _dispatch_kill_events(self, data):
-         match = re.search(r"You kill ([^!]+)", data)
+         match = re.search(r"You kill (?:the )?([^!]+?)!", data)
          if match is not None:
-             event.dispatch("kill", match.group(0))
+             event.dispatch("kill", match.group(1))
 
     def _dispatch_altar_events(self, data):
          match = re.search("There is an altar to", data)
          if match is not None:
              event.dispatch("on_altar")
 
-    def _dispatch_sacrifice_prompt(self, data):
-         match = re.search(r"There (?:is a|are) (.*?)(?: named (.*?)) here; sacrifice it?", data)
+    def _dispatch_sacrifice_prompt_event(self, data):
+         match = re.search(r"There (?:is a|are) (.*?)(?: named (.*?)) here; sacrifice it\?", data)
          if match is not None:
              event.dispatch("sacrifice_prompt", match.groups())
-         match = re.search(r"What do you want to sacrifice? \[(.+) or \?\*\]", data)
+         match = re.search(r"What do you want to sacrifice\? \[(.+?) or \?\*\]", data)
          if match is not None:
-             event.dispatch("sacrifice_prompt_inv", match.group(0)) 
+             event.dispatch("sacrifice_prompt_inv", match.group(1)) 
      
-    def _dispatch_sacrifice_response(self, data):
+    def _dispatch_sacrifice_response_event(self, data):
          match = re.search(r"(Nothing happens|An object appears at your feet|[^\s]+ seems (?:slightly )mollified|You feel partially absolved|You glimpse a four-leaf clover at your feet|You have a hopeful feeling|You have a feeling of reconciliation)", data)
          if match is not None:
-             event.dispatch("sacrifice_response", match.group(0))
+             event.dispatch("sacrifice_response", match.group(1))
 
-    def _dispatch_eat_prompt(self, data):
+    def _dispatch_eat_prompt_event(self, data):
          match = re.search("There (?:is a|are) (.*?) here; eat (?:it|one)?", data)
          if match is not None:
-              event.dispatch("eat_prompt", match.group(0))
-         match = re.search(r"What do you want to eat? \[(.+) or \?\*\]", data)
+              event.dispatch("eat_prompt", match.group(1))
+         match = re.search(r"What do you want to eat\? (\[(.+?) or \?\*\])?", data)
          if match is not None:
-              event.dispatch("eat_prompt_inv", match.group(0))
+              event.dispatch("eat_prompt_inv", match.group(1))
 
-    def _dispatch_name_prompt(self, data):
+    def _dispatch_name_prompt_event(self, data):
          match = re.search(r"What do you want to call (.+?)\?", data)
          if match is not None:
-              event.dispatch("name_prompt", match.group(0))
+              event.dispatch("name_prompt", match.group(1))
 
-    def _dispatch_item_pickup(self, data):
-         match = re.search(r"(.) - ([^.]+).", data)
+    def _dispatch_wield_prompt_event(self, data):
+         match = re.search(r"What do you want to wield\? \[- (.*?) or \?\*\]", data)
          if match is not None:
-              event.dispatch("item_pickup", match.group(0), match.group(1))
+              event.dispatch("wield_prompt", match.group(1))
+
+    def _dispatch_item_pickup_events(self, data):
+         for match in re.finditer(r"(.) - ([^.]+?)\.", data):
+              event.dispatch("item_pickup", match.group(1), match.group(2))
 
     def _content(self):
         return [line.translate(ibm) for line 
@@ -226,13 +231,12 @@ class Brain:
            if hp != self.hp:
               self.hp = hp
               event.dispatch("hp_change", hp)
-        logging.info("hp event check: %", line)
     
     def _dispatch_hunger_event(self):
         line = self._get_last_line()
         match = re.search("(Hungry|Weak|Fainting|FoodPois|Fainted)", line)
         if match is not None:
-           hunger = match.group(0)
+           hunger = match.group(1)
            if self.hungry != hunger:
               self.hungry = hunger
               event.dispatch("hunger", hunger)
@@ -241,7 +245,7 @@ class Brain:
         line = self._get_last_line()
         match = re.search("(Burdened|Stressed|Strained|Overtaxed)", line)
         if match is not None:
-           burden = match.group(0)
+           burden = match.group(1)
            event.dispatch("burden", burden)
 
     statusline_re = re.compile("(Hungry|Weak)...")
@@ -261,6 +265,25 @@ class Brain:
         if self.cursor_is_on_player():
             event.dispatch("move", self.term.cursor())
 
+    def _dispatch_teleport_prompt_event(self, data):
+        match = re.search("To what position do you want to be teleported\?", data)
+        if match: 
+           event.dispatch("teleport_prompt")
+
+    def _dispatch_select_prompt_event(self, data):
+        match = re.search(r"\(For instructions type a \?\)", data)
+        if match:
+           event.dispatch("select_name_prompt")
+
+    def _dispatch_name_what_prompt_event(self,data):
+        match = re.search("What do you wish to name\?", data)
+        if match:
+           event.dispatch("name_what")
+
+    def _dispatch_extended_command_prompt_event(self):
+        if self.term.display[0][0] == '#' and self.term.cursor() == (2,0):
+           event.dispatch('extended_command_prompt')
+
     def cursor_is_on_player(self):
         """ Return whether or not the cursor is currently on the player. """
 
@@ -268,7 +291,8 @@ class Brain:
         return \
             "To what position do you want to be teleported?" not in first and \
             "Please move the cursor to an unknown object." not in first and \
-            self.char_at(*self.term.cursor()) != " "
+            self.char_at(*self.term.cursor()) != " " and \
+            self.term.cursor()[1] > 0
 
     def char_at(self, x, y):
         """ Return the glyph at the specified coordinates """
@@ -281,7 +305,7 @@ class Brain:
         """
         Callback attached to the output proxy.
         """
-        #logging.info("brain process" + repr(data))
+       # logging.debug("brain process " + data)
 
         #self._dispatch_status_events(data)
         #self._dispatch_intrinsic_events(data)
@@ -295,7 +319,21 @@ class Brain:
         self._dispatch_burden_event()
         self._dispatch_hunger_event()
         self._dispatch_move_event()
+        self._dispatch_kill_events(data)
+        self._dispatch_altar_events(data)
+        self._dispatch_sacrifice_prompt_event(data)
+        self._dispatch_sacrifice_response_event(data)
+        self._dispatch_eat_prompt_event(data)
+        self._dispatch_name_prompt_event(data)
+        self._dispatch_wield_prompt_event(data)
+        self._dispatch_item_pickup_events(data)
+        self._dispatch_name_what_prompt_event(data)
+        self._dispatch_teleport_prompt_event(data)
+        self._dispatch_select_prompt_event(data)
+        self._dispatch_extended_command_prompt_event()
         
+        #fort broken event
         if "--More--" not in self.term.display[self.term.cursor()[1]]:
             self.prev_cursor = self.term.cursor()
-
+        else:
+            event.dispatch('more')
