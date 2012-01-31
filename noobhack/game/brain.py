@@ -337,3 +337,5 @@ class Brain:
             self.prev_cursor = self.term.cursor()
         else:
             event.dispatch('more')
+        if self.cursor_is_on_player():
+           events.dispatch('waiting_input')

@@ -24,6 +24,8 @@ class Farmer:
         self.unnamed = True
 
     def listen(self):
+        events.dispatcher.add_event_listener('waiting_input', self._waiting_input_handler)
+        events.dispatcher.add_event_listener("more", self._more_handler)
         events.dispatcher.add_event_listener("move", self._move_handler)
         events.dispatcher.add_event_listener("kill", self._kill_handler)
         events.dispatcher.add_event_listener("on_altar", self._on_altar_handler)
@@ -46,7 +48,7 @@ class Farmer:
         events.dispatcher.add_event_listener("fort_broken", self._fort_broken_handler)
         #events.dispatcher.add_event_listener("", self.__handler)
  
-    def do_input():
+    def _waiting_input_handler():
         if abort:
            del self.pending_input[:]
            return
@@ -82,7 +84,10 @@ class Farmer:
            
     def _on_altar_handler(self, event):
         pass
- 
+    
+    def _more_handler(self, event):
+        self.pending_input.append(' ')
+
     def _move_handler(self, event, value):
         self.cur_pos = value
 
@@ -128,7 +133,7 @@ class Farmer:
                   return
 
     def _name_prompt_handler(self, event,value):
-        self.pending_input.append(base64.encode(self.name_number))
+        self.pending_input.append(base64.encodestring(self.name_number))
         self.pending_input.append('\r')
         self.name_number += 1
         self.named = True
