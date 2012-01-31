@@ -2,6 +2,7 @@ from noobhack.game import events
 import logging
 import base64
 import re
+from struct import pack
 
 altar_pos = (69,18)
 stash_pos = (70,19)
@@ -133,7 +134,7 @@ class Farmer:
                   return
 
     def _name_prompt_handler(self, event,value):
-        self.pending_input.append(base64.encodestring(self.name_number))
+        self.pending_input.append(base64.encodestring(pack('<Q',self.name_number).rstrip('\x00')))
         self.pending_input.append('\r')
         self.name_number += 1
         self.named = True
