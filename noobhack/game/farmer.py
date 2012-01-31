@@ -48,8 +48,8 @@ class Farmer:
         events.dispatcher.add_event_listener("fort_broken", self._fort_broken_handler)
         #events.dispatcher.add_event_listener("", self.__handler)
  
-    def _waiting_input_handler():
-        if abort:
+    def _waiting_input_handler(self,event):
+        if self.abort:
            del self.pending_input[:]
            return
 
