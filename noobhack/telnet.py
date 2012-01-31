@@ -54,7 +54,7 @@ class Telnet:
             # And we should probably tell the server we will send our window
             # size
             socket.send("%s%s\x1f" % (telnetlib.IAC, telnetlib.WILL))
-            socket.send("%s%s\x1f\x00\x96\x00\x1E%s%s" % (telnetlib.IAC, telnetlib.SB, telnetlib.IAC, telnetlib.SE)
+            socket.send("%s%s\x1f\x00\x96\x00\x1E%s%s" % (telnetlib.IAC, telnetlib.SB, telnetlib.IAC, telnetlib.SE))
         elif command == telnetlib.DO and option == "\x20":
             # Tell the server to sod off, we won't send the terminal speed
             socket.send("%s%s\x20" % (telnetlib.IAC, telnetlib.WONT))
