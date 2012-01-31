@@ -97,7 +97,7 @@ class Brain:
              event.dispatch("on_altar")
 
     def _dispatch_sacrifice_prompt_event(self, data):
-         match = re.search(r"There (?:is a|are) (.*?)(?: named (.*?)) here; sacrifice it\?", data)
+         match = re.search(r"There (?:is a|are \d+) (.*?)(?: named (.*?)) here; sacrifice it\?", data)
          if match is not None:
              event.dispatch("sacrifice_prompt", match.groups())
          match = re.search(r"What do you want to sacrifice\? \[(.+?) or \?\*\]", data)
@@ -110,7 +110,7 @@ class Brain:
              event.dispatch("sacrifice_response", match.group(1))
 
     def _dispatch_eat_prompt_event(self, data):
-         match = re.search("There (?:is a|are) (.*?) here; eat (?:it|one)?", data)
+         match = re.search("There (?:is a|are \d+) (.*?) here; eat (?:it|one)?", data)
          if match is not None:
               event.dispatch("eat_prompt", match.group(1))
          match = re.search(r"What do you want to eat\? (\[(.+?) or \?\*\])?", data)

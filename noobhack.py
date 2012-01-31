@@ -305,9 +305,9 @@ class Noobhack:
 
         # Let's wait until we have something to do...
         logging.debug("%f %s", time(), self.pending_input) 
-	if len(self.pending_input) > 0 and time() > self.last_input + .10 and self.mode == 'bot':
+	if len(self.pending_input) > 0 and time() > self.last_input + 1.0 and self.mode == 'bot':
 	    first = self.pending_input.pop(0)
-            #self.input_proxy.game.write(first)
+            self.input_proxy.game.write(first)
 	    logging.debug("sending %s, left: %s", first, self.pending_input)
 #            self.pending_input = self.pending_input[1:]
             self.last_input = time()

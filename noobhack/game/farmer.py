@@ -14,6 +14,7 @@ class Farmer:
         self.failed_sacs = {}
         self.last_sac = None
         self.kill_count = 0
+        self.kill_total = 0
         self.mode = 'kill'
         self.name_number = 40
         self.hungry = False
@@ -50,7 +51,7 @@ class Farmer:
         #events.dispatcher.add_event_listener("", self.__handler)
  
     def _waiting_input_handler(self,event):
-        logging.debug("state: %s kill_count: %d", self.mode, self.kill_count)
+        logging.debug("state: %s kill_count: %d kill_total:%d", self.mode, self.kill_count, kill_total)
         if self.abort:
            del self.pending_input[:]
            return
@@ -77,12 +78,12 @@ class Farmer:
                  if self.altar_free:
                     self.pending_input.append('y')
                  else:
-                    self.pending_input.append('.')
+                    self.pending_input.append('y')
               elif self.cur_pos == altar_pos:
                  self.pending_input.append('#')
               else:
                  self.abort = True
-                 logging.error('not on stash or altar (in sac), abroting! %s', self.cur_pos)
+                 logging.error('not on stash or altar (in sac), aborting! %s', self.cur_pos)
            
     def _on_altar_handler(self, event):
         pass
@@ -101,9 +102,10 @@ class Farmer:
     
     def _kill_handler(self, event, value):
         self.kill_count += 1
+        self.kill_total += 1
         if self.kill_count >= 5 and self.mode == 'kill':
            self.mode = 'sac'
-           self.pending_input.append('w')
+           self.kill_count = 0
         elif self.mode == 'split':
            self.mode = 'kill'
            self.pending_input.append('w')
@@ -117,7 +119,9 @@ class Farmer:
            self.pending_input.append('y')
    
     def _sacrifice_prompt_inv_handler(self, event, value):
-        self.mode = 'split'
+        self.pending_input.append('\r')
+        self.pending_input.append('w')
+	self.mode = 'split'
    
     def _sacrifice_response_handler(self, event, value):
         if value == 'Nothing happens':
@@ -149,9 +153,9 @@ class Farmer:
         self.pending_input.append(';')
 
     def _wield_prompt_handler(self, event, value):
-        if self.mode == 'kill':
+        if self.mode == 'kill' or self.mode == 'sac':
            self.pending_input.append('i')
-        elif self.mode == 'split' or self.mode == 'sac':
+        elif self.mode == 'split':
            self.pending_input.append('p')
            
     def _item_pickup_handler(self, event, shortcut, name):
@@ -161,7 +165,7 @@ class Farmer:
         if value <= 100:
            logging.error("aborting due to low hp")
            #XXX: turn this back on before using! 
-           #self.abort = True
+           self.abort = True
     
     def _hunger_handler(self, event, value):
         self.hungry = True
