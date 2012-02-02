@@ -241,7 +241,7 @@ class Telnet:
                 output += msg % args
             else:
                 output += msg
-            logging.debug(msg)
+            logging.debug(output)
 
     def set_debuglevel(self, debuglevel):
         """Set the debug level.
