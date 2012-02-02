@@ -137,7 +137,7 @@ class Brain:
 
     def _dispatch_loot_event(self, data):
         match = re.search('Loot which containers?', data)
-        if match:
+        #if match:
            
     def _content(self):
         return [line.translate(ibm) for line 
