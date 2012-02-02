@@ -152,7 +152,8 @@ class Noobhack:
         self.term = vt102.screen((rows-1, cols), self.options.encoding)
         self.term.attach(self.stream)
         
-        socket.send("%s%s\x1f%s%s%s%s" % (telnetlib.IAC, telnetlib.SB, pack(">h", rows-1), pack(">h", cols), telnetlib.IAC, telnetlib.SE))
+        if not self.options.local:
+            self.output_proxy.conn.get_socket().send("%s%s\x1f%s%s%s%s" % (telnetlib.IAC, telnetlib.SB, pack(">h", rows-1), pack(">h", cols), telnetlib.IAC, telnetlib.SE))
 
         self.output_proxy.register(self.stream.process)
 
