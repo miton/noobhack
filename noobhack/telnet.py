@@ -16,7 +16,8 @@ class Telnet:
 
     def write(self, buf):
         """ Proxy input to the telnet process' stdin. """
-        self.conn.get_socket().sendall(buf)
+        #self.conn.get_socket().sendall(buf)
+        self.conn.write(buf)
 
     def read(self):
         """ 
