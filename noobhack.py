@@ -261,7 +261,7 @@ class Noobhack:
             else:
                 conn = telnet.Telnet(
                     self.options.host,
-                    self.options.port
+                    self.options.port, size()
                 )
             conn.open()
         except IOError, error:

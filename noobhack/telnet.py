@@ -2,6 +2,7 @@ import os
 import telnetlib
 import logging
 
+from struct import pack
 class Telnet:
     """
     Runs and manages the input/output of a remote nethack game. The class 
@@ -9,10 +10,11 @@ class Telnet:
     possible (grumble, grumble, grumble).
     """
 
-    def __init__(self, host="nethack.alt.org", port=23):
+    def __init__(self, host="nethack.alt.org", port=23, size=(80,24)):
         self.host = host
         self.port = port
         self.conn = None
+        self.size = size
 
     def write(self, buf):
         """ Proxy input to the telnet process' stdin. """
@@ -34,6 +36,7 @@ class Telnet:
 
         self.conn = telnetlib.Telnet(self.host, self.port)
         self.conn.set_option_negotiation_callback(self.set_option)
+        self.conn.get_socket().sendall(pack("<ccc", telnetlib.IAC, telnetlib.WILL, telnetlib.NAWS))
 
     def close(self):
         """ Close the connection. """
@@ -56,8 +59,9 @@ class Telnet:
             # And we should probably tell the server we will sendall our window
             # size
             logging.debug("callback on option NAWS")
-            socket.sendall("%s%s\x1f" % (telnetlib.IAC, telnetlib.WILL))
+            #socket.sendall("%s%s\x1f" % (telnetlib.IAC, telnetlib.WILL))
             #socket.sendall("%s%s\x1f\x00\x96\x00\x1E%s%s" % (telnetlib.IAC, telnetlib.SB, telnetlib.IAC, telnetlib.SE))
+            socket.sendall(pack("<cccHHcc", telnetlib.IAC, telnetlib.SB, telnetlib.NAWS, self.size[1], self.size[0], telnetlib.IAC, telnetlib.SE))
         elif command == telnetlib.DO and option == "\x20":
             # Tell the server to sod off, we won't sendall the terminal speed
             socket.sendall("%s%s\x20" % (telnetlib.IAC, telnetlib.WONT))
