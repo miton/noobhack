@@ -129,6 +129,7 @@ class Noobhack:
         self.playing = False
         self.reloading = False
 
+	self.naws_last_sent = time()
         self.last_input = time()
         self.pending_input = []
 
@@ -153,7 +154,7 @@ class Noobhack:
         self.term.attach(self.stream)
         
         if not self.options.local:
-            packet = pack(">bbbhhbb", 255, 250, 31, rows-1, cols, 255, 240)
+            packet = pack(">bbbhhbb", 255, 250, 31, cols, rows-1, 255, 240)
             self.nethack.conn.get_socket().send(packet)
             logging.debug("sent NAWS on connect: %s", ' '.join(['%02x' % ord(c) for c in packet]))
 
@@ -312,9 +313,20 @@ class Noobhack:
 
         if self.playing:
             self.save()
+        else:
+           #just spam NAWS to figure out wtf is going on
+           if time() > self.naws_last_sent + .2:
+              packet = pack(">bbbhhbb", 255, 250, 31, cols, rows-1, 255, 240)
+              self.nethack.conn.get_socket().send(packet)
+              logging.debug("sent NAWS on connect: %s", ' '.join(['%02x' % ord(c) for c in packet]))
+              self.naws_last_sent = time()
+
+
         wait_time = .1
         # Let's wait until we have something to do...
         #logging.debug("%f %s", time(), self.pending_input) 
+        #NB: I don't understand how this works when we make up input since chances are it should just be blocked on the select?
+        #also is the eating first input my fault or somewhere else
 	if len(self.pending_input) > 0 and time() > self.last_input + wait_time and self.mode == 'bot' and not self.farmer.abort:
 	    first = self.pending_input.pop(0)
             self.input_proxy.game.write(first)
