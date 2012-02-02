@@ -153,7 +153,7 @@ class Noobhack:
         self.term.attach(self.stream)
         
         if not self.options.local:
-            packet = pack(">ccchhcc", 255, 250, 31, rows-1, cols, 255, 240)
+            packet = pack(">bbbhhbb", 255, 250, 31, rows-1, cols, 255, 240)
             self.nethack.conn.get_socket().send(packet)
             logging.debug("sent NAWS on connect: %s", ' '.join(['%02x' % ord(c) for c in packet]))
 
