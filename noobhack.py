@@ -153,7 +153,9 @@ class Noobhack:
         self.term.attach(self.stream)
         
         if not self.options.local:
-            self.nethack.conn.get_socket().send("%s%s\x1f%s%s%s%s" % (telnetlib.IAC, telnetlib.SB, pack(">h", rows-1), pack(">h", cols), telnetlib.IAC, telnetlib.SE))
+            packet = pack(">ccchhcc", (255, 250, 31, rows-1, cols, 255, 240)
+            self.nethack.conn.get_socket().send(packet)
+            logging.debug("sent NAWS on connect: %s", ' '.join(['%02x' % ord(c) for c in packet]))
 
         self.output_proxy.register(self.stream.process)
 
