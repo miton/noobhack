@@ -155,7 +155,7 @@ class Noobhack:
         
         if not self.options.local:
             packet = pack(">BBBHHBB", 255, 250, 31, cols, rows-1, 255, 240)
-            self.nethack.conn.get_socket().send(packet)
+            self.nethack.conn.get_socket().sendall(packet)
             logging.debug("sent NAWS on connect: %s", ' '.join(['%02x' % ord(c) for c in packet]))
 
         self.output_proxy.register(self.stream.process)
@@ -318,7 +318,7 @@ class Noobhack:
            if time() > self.naws_last_sent + .2:
               rows,cols = size()
               packet = pack(">BBBHHBB", 255, 250, 31, cols, rows-1, 255, 240)
-              self.nethack.conn.get_socket().send(packet)
+              self.nethack.conn.get_socket().sendall(packet)
               logging.debug("sent NAWS on connect: %s", ' '.join(['%02x' % ord(c) for c in packet]))
               self.naws_last_sent = time()
 
