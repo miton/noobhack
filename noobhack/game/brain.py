@@ -135,6 +135,10 @@ class Brain:
         if match:
             event.dispatch("unknown_direction")
 
+    def _dispatch_loot_event(self, data):
+        match = re.search('Loot which containers?', data)
+        if match:
+           
     def _content(self):
         return [line.translate(ibm) for line 
                 in self.term.display 
@@ -279,6 +283,8 @@ class Brain:
         match = re.search(r"\(For instructions type a \?\)", data)
         if match and not self.seen_teleport:
            event.dispatch("select_name_prompt")
+        else:
+           self.seen_teleport = False
 
     def _dispatch_name_what_prompt_event(self,data):
         match = re.search("What do you wish to name\?", data)
@@ -289,6 +295,11 @@ class Brain:
         if self.term.display[0][0] == '#' and self.term.cursor() == (2,0):
            event.dispatch('extended_command_prompt')
 
+     def _dispatch_inventory_list_event(self, data):
+	line = self._get_last_line()
+        match = re.search("\(\d+ of \d+\)", line)
+        if match:
+           
     def cursor_is_on_player(self):
         """ Return whether or not the cursor is currently on the player. """
 
@@ -342,7 +353,6 @@ class Brain:
         self._dispatch_i_see_no_monster_event(data)
         self._dispatch_unknown_direction_event(data)
 
-	self.seen_teleport = False
         event.dispatch('check_spot', self.char_at(69,18)) 
         #fort broken event
         if "--More--" not in self.term.display[self.term.cursor()[1]]:

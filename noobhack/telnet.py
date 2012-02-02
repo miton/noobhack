@@ -1,5 +1,6 @@
 import os
 import telnetlib
+import logging
 
 class Telnet:
     """
@@ -53,6 +54,7 @@ class Telnet:
         elif command == telnetlib.DO and option == "\x1f":
             # And we should probably tell the server we will send our window
             # size
+            logging.debug("callback on option NAWS")
             socket.send("%s%s\x1f" % (telnetlib.IAC, telnetlib.WILL))
             socket.send("%s%s\x1f\x00\x96\x00\x1E%s%s" % (telnetlib.IAC, telnetlib.SB, telnetlib.IAC, telnetlib.SE))
         elif command == telnetlib.DO and option == "\x20":
