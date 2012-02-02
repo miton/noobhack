@@ -12,6 +12,8 @@ import cPickle as pickle
 
 import vt102 
 import logging
+import telnetlib
+from struct import pack
 
 from time import time,sleep 
 from noobhack import telnet, process, proxy
@@ -149,8 +151,12 @@ class Noobhack:
         rows, cols = size()
         self.term = vt102.screen((rows-1, cols), self.options.encoding)
         self.term.attach(self.stream)
+        
+        socket.send("%s%s\x1f%s%s%s%s" % (telnetlib.IAC, telnetlib.SB, pack(">h", rows-1), pack(">h", cols), telnetlib.IAC, telnetlib.SE))
+
         self.output_proxy.register(self.stream.process)
 
+	
         self.game = Game(self.term)
 
         self.output_proxy.register(self._restore_game_checker)
