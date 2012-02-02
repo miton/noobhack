@@ -153,7 +153,7 @@ class Noobhack:
         self.term.attach(self.stream)
         
         if not self.options.local:
-            self.nethack.get_socket().send("%s%s\x1f%s%s%s%s" % (telnetlib.IAC, telnetlib.SB, pack(">h", rows-1), pack(">h", cols), telnetlib.IAC, telnetlib.SE))
+            self.nethack.conn.get_socket().send("%s%s\x1f%s%s%s%s" % (telnetlib.IAC, telnetlib.SB, pack(">h", rows-1), pack(">h", cols), telnetlib.IAC, telnetlib.SE))
 
         self.output_proxy.register(self.stream.process)
 
