@@ -295,7 +295,7 @@ class Brain:
         if self.term.display[0][0] == '#' and self.term.cursor() == (2,0):
            event.dispatch('extended_command_prompt')
 
-     def _dispatch_inventory_list_event(self, data):
+    def _dispatch_inventory_list_event(self, data):
 	line = self._get_last_line()
         match = re.search("\(\d+ of \d+\)", line)
         if match:
