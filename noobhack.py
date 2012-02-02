@@ -154,7 +154,7 @@ class Noobhack:
         self.term.attach(self.stream)
         
         if not self.options.local:
-            packet = pack(">bbbhhbb", 255, 250, 31, cols, rows-1, 255, 240)
+            packet = pack(">BBBHHBB", 255, 250, 31, cols, rows-1, 255, 240)
             self.nethack.conn.get_socket().send(packet)
             logging.debug("sent NAWS on connect: %s", ' '.join(['%02x' % ord(c) for c in packet]))
 
@@ -317,7 +317,7 @@ class Noobhack:
            #just spam NAWS to figure out wtf is going on
            if time() > self.naws_last_sent + .2:
               rows,cols = size()
-              packet = pack(">bbbhhbb", 255, 250, 31, cols, rows-1, 255, 240)
+              packet = pack(">BBBHHBB", 255, 250, 31, cols, rows-1, 255, 240)
               self.nethack.conn.get_socket().send(packet)
               logging.debug("sent NAWS on connect: %s", ' '.join(['%02x' % ord(c) for c in packet]))
               self.naws_last_sent = time()
