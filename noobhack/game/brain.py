@@ -348,7 +348,7 @@ class Brain:
         self._dispatch_wield_prompt_event(data)
         self._dispatch_item_pickup_events(data)
         self._dispatch_name_what_prompt_event(data)
-        self._dispatch_select_prompt_event(data)
+        #self._dispatch_select_prompt_event(data)
         self._dispatch_extended_command_prompt_event()
         self._dispatch_i_see_no_monster_event(data)
         self._dispatch_unknown_direction_event(data)

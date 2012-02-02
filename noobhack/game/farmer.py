@@ -25,8 +25,8 @@ class Farmer:
         self.cur_location = (0,0)
         self.altar_free = None
         self.named = True
-        self.sac = True
-        self.safe_pray = True
+        self.sac = False
+        self.safe_pray = False
 
     def listen(self):
         events.dispatcher.add_event_listener('waiting_input', self._waiting_input_handler)
