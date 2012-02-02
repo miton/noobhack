@@ -298,7 +298,7 @@ class Brain:
     def _dispatch_inventory_list_event(self, data):
 	line = self._get_last_line()
         match = re.search("\(\d+ of \d+\)", line)
-        if match:
+        #if match:
            
     def cursor_is_on_player(self):
         """ Return whether or not the cursor is currently on the player. """
