@@ -25,13 +25,14 @@ class Farmer:
         self.abort = False
         self.inventory = {}
         self.spellls = {}
+        self.spells_names = {}
         self.pending_input = pending
         self.cur_location = (0,0)
         self.altar_free = None
         self.named = True
         self.sac = False
         self.safe_pray = False
-        self.keep_inv = ''
+        self.keep_inv = 'JECidwtbgrFSplGkcnaumoeP'
         self.unidentified_count = 0 #not likely to be accurate
  
     def listen(self):
@@ -102,6 +103,7 @@ class Farmer:
               else:
                     self.abort == True
                     logging.error('not on stash or altar, aborting! %s', self.cur_pos)
+                    del self.pending_input[:]
            elif self.mode == 'sac':
               if self.cur_pos == stash_pos:
                  if self.altar_free:
@@ -116,7 +118,31 @@ class Farmer:
               else:
                  self.abort = True
                  logging.error('not on stash or altar (in sac), aborting! %s', self.cur_pos)
-           
+                 del self.pending_input[:]
+           elif self.mode == 'identify':
+                if self.cur_pos == stash_pos:
+                   key = self.spells_names['identify']
+                   if self.spells[key].level[-1] == '*':
+                      self.mode = 'stash'
+                      self.pending_input.append('.')
+                   else:
+                      self.pending_input.append('Z')
+                elif self.cur_pos == altar_pos:
+                      self.pending_input.append('n')      
+                else:
+                   self.abort = True
+                   logging.error('not on stash or altar in identify, aborting %s', self.cur_pos)
+                   del self.pending_input[:]
+           elif self.mode == 'stash':
+                if self.cur_pos == stash_pos:
+                   self.pending_input.append('#')
+                elif self.cur_pos == altar_pos:
+                   self.pending_input.append('n')
+                else:
+                   self.abort = True
+                   logging.error('not on stash or altar in stash, aborting %s', self.cur_pos)
+                   del self.pending_input[:]
+
     def _on_altar_handler(self, event):
         pass
     
@@ -128,6 +154,7 @@ class Farmer:
 
     def _spell_entry_handler(self, event, key, name, level, fail):
         self.spells[key] = Spell(key, name, level, fail)
+        self.spells_names[name] = key
 
     def _drop_item_handler(self, event, key, name):
         pass
@@ -142,7 +169,8 @@ class Farmer:
     def _loot_item_handler(self, event, key, name): #this is 'loot which chest'
         match = re.search(r'unsorted', name)
         if match:
-           self.pending_input.append(key) 
+           self.pending_input.append(key)
+        self.mode = 'kill' 
 
     def _died_handler(self, event):
         logging.debug("aborting because we died (and were hopefully saved)")
@@ -156,12 +184,14 @@ class Farmer:
 
     def _identify_done_handler(self, event):
         self.unidentified_count = 0
+        self.mode = 'stash'
 
     def _identify_list_handler(self, event):
-        pass
+        self.pending_input.append(',')
    
     def _identify_item_handler(self, event, key, name):
-        self.pending_input.append(key)
+        pass
+        #self.pending_input.append(key)
 
     def _more_handler(self, event):
         self.pending_input.append(' ')
@@ -245,6 +275,8 @@ class Farmer:
     def _item_pickup_handler(self, event, shortcut, name):
         self.inventory[shortcut] = name
         self.unidentified_count += 1
+        if self.unidentified_count > 10:
+           self.mode = 'identify'
 
     def _hp_change_handler(self, event, value):
         if value <= 100:
