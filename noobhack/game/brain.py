@@ -269,7 +269,7 @@ class Brain:
     def _dispatch_hunger_event(self):
         #XXX: findall
         line = self._get_last_line()
-        match = re.search("(Hungry|Weak|Fainting|FoodPois|Fainted|Ill)", line)
+        match = re.search("(Hungry|Weak|Fainting|FoodPois|Fainted|Ill|Stun|Conf)", line)
         if match is not None:
            hunger = match.group(1)
            if self.hungry != hunger:
