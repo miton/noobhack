@@ -24,7 +24,7 @@ class Farmer:
         self.hungry = False
         self.abort = False
         self.inventory = {}
-        self.spellls = {}
+        self.spells = {}
         self.spells_names = {}
         self.pending_input = pending
         self.cur_location = (0,0)
@@ -36,11 +36,12 @@ class Farmer:
         self.unidentified_count = 0 #not likely to be accurate
  
     def listen(self):
+        events.dispatcher.add_event_listener('unhungry', self._unhungry_handler)
         events.dispatcher.add_event_listener('loot_do_what', self._loot_do_what_handler)
         events.dispatcher.add_event_listener('stoning', self._stoning_handler)
         events.dispatcher.add_event_listener('died', self._died_handler)
-        events.dispatcher.add_event_listener('inventory_item', self._inventory_item_handler)
-        events.dispatcher.add_event_listener('identify', self._identify_list_handler)
+        #events.dispatcher.add_event_listener('inventory_item', self._inventory_item_handler)
+        events.dispatcher.add_event_listener('identify_item', self._identify_item_handler)
         events.dispatcher.add_event_listener('identify_done', self._identify_done_handler)
         events.dispatcher.add_event_listener('put_in_type', self._put_in_type_handler)
         events.dispatcher.add_event_listener('loot_item', self._loot_item_handler)
@@ -121,12 +122,12 @@ class Farmer:
                  del self.pending_input[:]
            elif self.mode == 'identify':
                 if self.cur_pos == stash_pos:
-                   key = self.spells_names['identify']
-                   if self.spells[key].level[-1] == '*':
-                      self.mode = 'stash'
-                      self.pending_input.append('.')
-                   else:
-                      self.pending_input.append('Z')
+                   #key = self.spells_names['identify'] #this should be checked later, since we might not have even opened the spells menu before
+                   #if self.spells[key].level[-1] == '*':
+                   #   self.mode = 'stash'
+                   #   self.pending_input.append('.')
+                   #else:
+                   self.pending_input.append('Z')
                 elif self.cur_pos == altar_pos:
                       self.pending_input.append('n')      
                 else:
@@ -146,25 +147,38 @@ class Farmer:
     def _on_altar_handler(self, event):
         pass
     
+    def _unhungry_handler(self, event):
+        self.hungry = False
+    
     def _menu_done_handler(self, event):
         self.pending_input.append(' ')
     
     def _menu_more_handler(self, event):
         self.pending_input.append(' ')
 
-    def _spell_entry_handler(self, event, key, name, level, fail):
+    def _spell_entry_handler(self, event, key, name, level, school, fail):
         self.spells[key] = Spell(key, name, level, fail)
         self.spells_names[name] = key
-
+        if self.mode == 'identify' and name == 'identify':
+           if level[-1] != '*':
+              self.pending_input.append(key)
+           else:
+              #self.mode = 'read'
+              self.mode = 'stash'
+       
     def _drop_item_handler(self, event, key, name):
         pass
 
     def _put_in_item_handler(self, event, key, name):
-        if key not in self.keep_inv:
-           self.pending_input.append(key)
+        self.pending_input.append('a')
+        #if key not in self.keep_inv:
+        #   self.pending_input.append(key)
+
+    def _put_in_type_handler(self, event):
+        self.pending_input.append('a') #put in what type of object, does this even exist?
 
     def _loot_do_what_handler(self, event):
-        self.pending_input.append('a')
+        self.pending_input.append('i') #do what with the container
 
     def _loot_item_handler(self, event, key, name): #this is 'loot which chest'
         match = re.search(r'unsorted', name)
@@ -186,12 +200,12 @@ class Farmer:
         self.unidentified_count = 0
         self.mode = 'stash'
 
-    def _identify_list_handler(self, event):
-        self.pending_input.append(',')
+    #def _identify_list_handler(self, event): #unused
+    #    self.pending_input.append(',')
    
     def _identify_item_handler(self, event, key, name):
-        pass
-        #self.pending_input.append(key)
+        self.pending_input.append(',') #menu event now only sends us one
+        #self.pending_input.append(key) #can't just send , because it would only work with odd number of items
 
     def _more_handler(self, event):
         self.pending_input.append(' ')
@@ -298,13 +312,17 @@ class Farmer:
         self.pending_input.append('.')
     
     def _extended_command_prompt_handler(self, event):
-        if self.safe_pray:
-	   self.pending_input.append('p')
-           self.pending_input.append('\r')
-           self.safe_pray = False
-        else:
-           self.pending_input.append('o')
-           self.pending_input.append('\r')
+        if self.mode == 'sac':
+           if self.safe_pray:
+	      self.pending_input.append('p')
+              self.pending_input.append('\r')
+              self.safe_pray = False
+           else:
+              self.pending_input.append('o')
+              self.pending_input.append('\r')
+        elif self.mode == 'stash':
+              self.pending_input.append('l')
+              self.pending_input.append('\r')
  
     def _fort_broken_handler(self, event, value):
         self.abort = True

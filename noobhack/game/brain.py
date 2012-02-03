@@ -30,7 +30,8 @@ class Brain:
         self.hp = None
         self.seen_teleport = False
         self.hungry = False
-        self.menu = None
+        self.menu_type_clear = False
+        self.menu_type = None
 
     def charisma(self):
         """ Return the player's current charisma """
@@ -277,6 +278,7 @@ class Brain:
               event.dispatch("hunger", hunger)
         elif self.hungry:
              self.hungry = False
+             event.dispatch("unhungry")
     
     def _dispatch_burden_event(self):
         line = self._get_last_line()
@@ -324,53 +326,61 @@ class Brain:
         if self.term.display[0][0] == '#' and self.term.cursor() == (2,0):
            event.dispatch('extended_command_prompt')
 
-    def _dispatch_inventory_list_event(self, data):
-	line = self._get_last_line()
-        match = re.search("\(\d+ of \d+\)", line)
-        if match:
-           if self.menu_type is None:
-              for m in re.finditer(r"(.) - (.+?)$", data):
-                  event.dispatch('inventory_item', m.group(1), m.group(2))
-          elif self
-    
-    def _dispatch_identify_list_event(self, data):
-        match = re.search(r"What would you like to identify first\?", data)
-        if match:
-           self.menu_type = 'identify'
-           for m in re.finditer(r"(.) - (.+?)$", data):
-               event.dispatch('identify_item', m.group(1), m.group(2))
+#    def _dispatch_inventory_list_event(self, data):
+#	#line = self._get_last_line()
+#        match = re.search("\((?:\d+ of \d+|end)\)", data)
+#        if match:
+#           if self.menu_type is None:
+#              for m in re.finditer(r"(.) - (.+?)(?:$|\x1b\[\d+;\d+(?:H|f))", data):
+#                  event.dispatch('inventory_item', m.group(1), m.group(2))
+          #elif self #dunno
+   #taken over by generic menu_event 
+   # def _dispatch_identify_list_event(self, data):
+   #     match = re.search(r"What would you like to identify first\?", data)
+   #     if match:
+   #        self.menu_type = 'identify'
+   #        for m in re.finditer(r"(.) - (.+?)$", data):
+   #            event.dispatch('identify_item', m.group(1), m.group(2))
         
     def _dispatch_identify_done_event(self, data):
-        match = re.search(r"You have already identified all of your possesions\.|That was all\.", data)
+        match = re.search(r"You have already identified all of your possessions\.|That was all\.", data)
         if match:
-           event.dispatc('identify_done')
+           event.dispatch('identify_done')
 
-    def _dispatch_put_in_what_type_event(self,data):
-        match = re.search("Put in what type of objects\?", data)
-        if match:
-           event.dispatch('put_in_type')
-           #do I ever need the types when I can just do all? lazy for now
+    #def _dispatch_put_in_what_type_event(self,data):
+    #    match = re.search("Put in what type of objects\?", data)
+    #    if match:
+    #       event.dispatch('put_in_type')
+    #       #do I ever need the types when I can just do all? lazy for now
   
     def _dispatch_menu_events(self, data):
-        menu_type_match = re.search(r"((?:What would you like to identify first\?)|(?:Loot which containers\?)|(?:Choose which spell to cast))", data) #What would you like to drop? -- but would make the next part not work
-        t = {'W':'identify', 'L':'loot', 'C':'spell', 'P':'put_in'}
-        self.menu_type = t[menu_type_match.group(1)[0]]
-
-        line = self._get_last_line()
+        menu_type_match = re.search(r"((?:What would you like to identify first\?)|(?:Loot which containers\?)|(?:Choose which spell to cast)|(?:Put in what type of objects\?)|(?:(?:The (.+?) is empty. )?Do what\?))", data) #What would you like to drop? -- but would make the next part not work
+        t = {'W':'identify', 'L':'loot', 'C':'spell', 'P':'put_in', 'T':'loot_do_what', 'D':'loot_do_what'}
+        if menu_type_match:
+           self.menu_type = t[menu_type_match.group(1)[0]]
+        elif self.menu_type is None:
+           self.menu_type = 'inventory'
+#        line = self._get_last_line()
         #actually end is only on single pages, so I don't need to fire this event at all
         #or do I after all if I use this for all pages
         #match = re.search(r"\((?:(\d+) of (\d+)|end))\)", line)
-        match = re.search(r"\((?:(?:(\d+) of (\d+))|end)\)", line)
+        match = re.search(r"\((?:(?:(\d+) of (\d+))|end)\)", data)
         if match:
-           if self.menu_type in ['loot', 'identify', 'put_in', 'drop']:
-              for m in re.finditer(r"(.) - (.+?)$", data):
+           if self.menu_type in ['loot', 'drop','inventory']:
+              for m in re.finditer(r"(.) - (.+?)(?:$|\x1b\[\d+;\d+(?:H|f))", data):
                   event.dispatch(self.menu_type+'_item', m.group(1), m.group(2))
            elif self.menu_type in ['spell']:
-             for m in re.finditer(r"(.) - (.*?)\s* (\d\*?)\s*([^\s]+)\s*(\d+)%", data)
-                  event.dispatch(self.menu_type+'_entry', *m.groups()[1:])
+             for m in re.finditer(r"(.) - (.*?)\s* (\d\*?)\s*([^\s]+)\s*(\d+)%", data):
+                  event.dispatch(self.menu_type+'_entry', *m.groups())
+           elif self.menu_type in ['identify', 'put_in']: #only send one since we only care about all for identify and a for put_in... this is hackish but whatever
+              event.dispatch(self.menu_type+'_item',m.group(1),m.group(2))
            if match.group(1) is None or match.group(1) == match.group(2):
-              self.menu_type = None
-              event.dispatch('menu_done')
+              if self.menu_type in ['put_in','identify','drop', 'loot', 'inventory']: #these menus do not automatically cancel
+                 event.dispatch('menu_done')
+              self.menu_type_clear = True
+              
+#              event.dispatch('menu_done') #this gets in the way of other menus.. some automatically cancel and some do not
+					  #spells, loot_do_what, put_in_type
            else:
               event.dispatch('menu_more')
        
@@ -432,14 +442,15 @@ class Brain:
         self._dispatch_extended_command_prompt_event()
         self._dispatch_i_see_no_monster_event(data)
         self._dispatch_unknown_direction_event(data)
-        self._dispatch_loot_do_what(self, data)
-        self._dispatch_put_in_event(self, data)
-        self._dispatch_stoning_event(self, data)
-        self._dispatch_life_saved_event(self, data)
-        self._dispatch_identify_list_event(self, data)
-        self._dispatch_identify_done_event(self, data)
-        self._dispatch_put_in_what_type_event(self, data)
-        self._dispatch_menu_events(self, data)
+        self._dispatch_loot_do_what(data)
+        #self._dispatch_put_in_event(data) #done by menu_events
+        self._dispatch_stoning_event(data)
+        self._dispatch_life_saved_event(data)
+        #self._dispatch_identify_list_event(data) #covered by menu
+        self._dispatch_identify_done_event(data)
+        #self._dispatch_put_in_what_type_event(data) #covered by menu
+        self._dispatch_menu_events(data)
+#        self._dispatch_inventory_list_event(data) #covered by menu
 
         event.dispatch('check_spot', self.char_at(69,18)) 
         #fort broken event
@@ -447,3 +458,6 @@ class Brain:
             self.prev_cursor = self.term.cursor()
         if self.cursor_is_on_player():
             event.dispatch('waiting_input')
+        if self.menu_type_clear:
+           self.menu_type_clear = False
+           self.menu_type = None
