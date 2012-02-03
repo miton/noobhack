@@ -4,9 +4,12 @@ import base64
 import re
 from struct import pack
 from random import random
+from collections import namedtuple
 
 altar_pos = (69,18)
 stash_pos = (70,19)
+
+Spell = namedtuple('Spell', ['key', 'name', 'remembered', 'fail'])
 
 class Farmer:
 
@@ -21,14 +24,32 @@ class Farmer:
         self.hungry = False
         self.abort = False
         self.inventory = {}
+        self.spellls = {}
         self.pending_input = pending
         self.cur_location = (0,0)
         self.altar_free = None
         self.named = True
         self.sac = False
         self.safe_pray = False
-
+        self.keep_inv = ''
+        self.unidentified_count = 0 #not likely to be accurate
+ 
     def listen(self):
+        events.dispatcher.add_event_listener('loot_do_what', self._loot_do_what_handler)
+        events.dispatcher.add_event_listener('stoning', self._stoning_handler)
+        events.dispatcher.add_event_listener('died', self._died_handler)
+        events.dispatcher.add_event_listener('inventory_item', self._inventory_item_handler)
+        events.dispatcher.add_event_listener('identify', self._identify_list_handler)
+        events.dispatcher.add_event_listener('identify_done', self._identify_done_handler)
+        events.dispatcher.add_event_listener('put_in_type', self._put_in_type_handler)
+        events.dispatcher.add_event_listener('loot_item', self._loot_item_handler)
+        events.dispatcher.add_event_listener('put_in_item', self._put_in_item_handler)
+        events.dispatcher.add_event_listener('drop_item', self._drop_item_handler)
+        events.dispatcher.add_event_listener('spell_entry', self._spell_entry_handler)
+        events.dispatcher.add_event_listener('menu_done', self._menu_done_handler)
+        events.dispatcher.add_event_listener('menu_more', self._menu_more_handler)
+#        events.dispatcher.add_event_listener('', self.__handler)
+
         events.dispatcher.add_event_listener('waiting_input', self._waiting_input_handler)
         events.dispatcher.add_event_listener("more", self._more_handler)
         events.dispatcher.add_event_listener("move", self._move_handler)
@@ -99,6 +120,49 @@ class Farmer:
     def _on_altar_handler(self, event):
         pass
     
+    def _menu_done_handler(self, event):
+        self.pending_input.append(' ')
+    
+    def _menu_more_handler(self, event):
+        self.pending_input.append(' ')
+
+    def _spell_entry_handler(self, event, key, name, level, fail):
+        self.spells[key] = Spell(key, name, level, fail)
+
+    def _drop_item_handler(self, event, key, name):
+        pass
+
+    def _put_in_item_handler(self, event, key, name):
+        if key not in self.keep_inv:
+           self.pending_input.append(key)
+
+    def _loot_do_what_handler(self, event):
+        self.pending_input.append('a')
+
+    def _loot_item_handler(self, event, key, name): #this is 'loot which chest'
+        match = re.search(r'unsorted', name)
+        if match:
+           self.pending_input.append(key) 
+
+    def _died_handler(self, event):
+        logging.debug("aborting because we died (and were hopefully saved)")
+        self.abort = True
+        del self.pending_input[:]
+
+    def _stoning_handler(self, event):
+        logging.debug("aborting due to stoning")
+        self.abort = True
+        del self.pending_input[:]
+
+    def _identify_done_handler(self, event):
+        self.unidentified_count = 0
+
+    def _identify_list_handler(self, event):
+        pass
+   
+    def _identify_item_handler(self, event, key, name):
+        self.pending_input.append(key)
+
     def _more_handler(self, event):
         self.pending_input.append(' ')
 
@@ -106,10 +170,10 @@ class Farmer:
         self.cur_pos = value
 
     def _check_spot_handler(self, event, value):
-        if value == '%':
-           self.altar_free = True
-        else:
+        if value in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@}\'&;:~]':
            self.altar_free = False
+        else:
+           self.altar_free = True
     
     def _kill_handler(self, event, value):
         self.kill_count += 1
@@ -180,6 +244,7 @@ class Farmer:
            
     def _item_pickup_handler(self, event, shortcut, name):
         self.inventory[shortcut] = name
+        self.unidentified_count += 1
 
     def _hp_change_handler(self, event, value):
         if value <= 100:
