@@ -136,14 +136,21 @@ class Brain:
         if match:
             event.dispatch("unknown_direction")
 
-    def _dispatch_loot_event(self, data):
-        match = re.search('Loot which containers?', data)
-        if match:
-           
-    def _dispatch_put_in_event(self, data):
-        match = re.search('Put in what?', data)
+    #covered with the basic menu one
+    #def _dispatch_loot_event(self, data):
+    #    match = re.search('Loot which containers?', data)
+    #    if match:
 
-    def _dispatch_cast_spell_event(self, data):
+    
+    def _dispatch_loot_do_what(self, data):
+        match = re.search(r"((?:The (.*?) is empty.)? Do what\?)", data)
+        if match:
+           event.dispatch("loot_do_what")
+
+    #def _dispatch_put_in_event(self, data):
+    #    match = re.search('Put in what?', data)
+
+    #def _dispatch_cast_spell_event(self, data):
 
     def _content(self):
         return [line.translate(ibm) for line 
@@ -249,8 +256,18 @@ class Brain:
               self.hp = hp
               event.dispatch("hp_change", hp)
     
+    def _dispatch_stoning_event(self, data):
+        match = re.search(r"(?:(?:You are slowing down)|(?:Your limbs are stiffening))", data)
+        if match:
+           event.dispatch('stoning')
+
+    def _dispatch_life_saved_event(self, data):
+        match = re.search(r"You die\.", data)
+        if match:
+           event.dispatch("died")
+
     def _dispatch_hunger_event(self):
-        #findall
+        #XXX: findall
         line = self._get_last_line()
         match = re.search("(Hungry|Weak|Fainting|FoodPois|Fainted|Ill)", line)
         if match is not None:
@@ -326,10 +343,19 @@ class Brain:
     def _dispatch_identify_done_event(self, data):
         match = re.search(r"You have already identified all of your possesions\.|That was all\.", data)
         if match:
-           event.dispatc('identify_done')  
+           event.dispatc('identify_done')
+
+    def _dispatch_put_in_what_type_event(self,data):
+        match = re.search("Put in what type of objects\?", data)
+        if match:
+           event.dispatch('put_in_type')
+           #do I ever need the types when I can just do all? lazy for now
   
     def _dispatch_menu_events(self, data):
-        menu_type_match = re.search(r"(What would you like to identify first\?|
+        menu_type_match = re.search(r"((?:What would you like to identify first\?)|(?:Loot which containers\?)|(?:Choose which spell to cast))", data) #What would you like to drop? -- but would make the next part not work
+        t = {'W':'identify', 'L':'loot', 'C':'spell', 'P':'put_in'}
+        self.menu_type = t[menu_type_match.group(1)[0]]
+
         line = self._get_last_line()
         #actually end is only on single pages, so I don't need to fire this event at all
         #or do I after all if I use this for all pages
@@ -374,7 +400,13 @@ class Brain:
 
         if "--More--" in self.term.display[self.term.cursor()[1]]:
            event.dispatch('more')
-        self._dispatch_teleport_prompt_event(data)
+        
+	#this is kind of terrible and i'm not even sure i like the event idea in the first place
+        #a lot of these each run a regexp on the same thing and hopefully they get cached instead of
+        #compiled every time
+  
+        #note some of the orders of these are important
+        self._dispatch_teleport_prompt_event(data) #should be first
         #self._dispatch_status_events(data)
         #self._dispatch_intrinsic_events(data)
         self._dispatch_turn_change_event()
@@ -396,10 +428,18 @@ class Brain:
         self._dispatch_wield_prompt_event(data)
         self._dispatch_item_pickup_events(data)
         self._dispatch_name_what_prompt_event(data)
-        #self._dispatch_select_prompt_event(data)
+        #self._dispatch_select_prompt_event(data) #disabled because I don't use C currently and it still(?) gets confused with teleport in rare cases
         self._dispatch_extended_command_prompt_event()
         self._dispatch_i_see_no_monster_event(data)
         self._dispatch_unknown_direction_event(data)
+        self._dispatch_loot_do_what(self, data)
+        self._dispatch_put_in_event(self, data)
+        self._dispatch_stoning_event(self, data)
+        self._dispatch_life_saved_event(self, data)
+        self._dispatch_identify_list_event(self, data)
+        self._dispatch_identify_done_event(self, data)
+        self._dispatch_put_in_what_type_event(self, data)
+        self._dispatch_menu_events(self, data)
 
         event.dispatch('check_spot', self.char_at(69,18)) 
         #fort broken event
