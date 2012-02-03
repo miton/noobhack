@@ -30,7 +30,8 @@ class Brain:
         self.hp = None
         self.seen_teleport = False
         self.hungry = False
- 
+        self.menu = None
+
     def charisma(self):
         """ Return the player's current charisma """
         line = self._content()[-2]
@@ -91,7 +92,7 @@ class Brain:
              event.dispatch("on_altar")
 
     def _dispatch_sacrifice_prompt_event(self, data):
-         match = re.search(r"There (?:is a|are \d+) (.*?)(?: named (.*?))? here; sacrifice (it|one)\?", data)
+         match = re.search(r"There (?:is a|are \d+) (.*?)(?: named (.*?))? here; sacrifice (?:it|one)\?", data)
          if match is not None:
              event.dispatch("sacrifice_prompt", match.groups())
          match = re.search(r"What do you want to sacrifice\? \[(.+?) or \?\*\]", data)
@@ -137,8 +138,13 @@ class Brain:
 
     def _dispatch_loot_event(self, data):
         match = re.search('Loot which containers?', data)
-        #if match:
+        if match:
            
+    def _dispatch_put_in_event(self, data):
+        match = re.search('Put in what?', data)
+
+    def _dispatch_cast_spell_event(self, data):
+
     def _content(self):
         return [line.translate(ibm) for line 
                 in self.term.display 
@@ -152,6 +158,9 @@ class Brain:
             if len(line) > 0:
                 break
         return line
+
+    def _get_first_line(self):
+        return self.term.display[0].translate(ibm).strip()
 
     def _dispatch_branch_change_event(self):
         level = [line.translate(ibm) for line in self.term.display]
@@ -241,6 +250,7 @@ class Brain:
               event.dispatch("hp_change", hp)
     
     def _dispatch_hunger_event(self):
+        #findall
         line = self._get_last_line()
         match = re.search("(Hungry|Weak|Fainting|FoodPois|Fainted|Ill)", line)
         if match is not None:
@@ -248,6 +258,8 @@ class Brain:
            if self.hungry != hunger:
               self.hungry = hunger
               event.dispatch("hunger", hunger)
+        elif self.hungry:
+             self.hungry = False
     
     def _dispatch_burden_event(self):
         line = self._get_last_line()
@@ -298,8 +310,44 @@ class Brain:
     def _dispatch_inventory_list_event(self, data):
 	line = self._get_last_line()
         match = re.search("\(\d+ of \d+\)", line)
-        #if match:
-           
+        if match:
+           if self.menu_type is None:
+              for m in re.finditer(r"(.) - (.+?)$", data):
+                  event.dispatch('inventory_item', m.group(1), m.group(2))
+          elif self
+    
+    def _dispatch_identify_list_event(self, data):
+        match = re.search(r"What would you like to identify first\?", data)
+        if match:
+           self.menu_type = 'identify'
+           for m in re.finditer(r"(.) - (.+?)$", data):
+               event.dispatch('identify_item', m.group(1), m.group(2))
+        
+    def _dispatch_identify_done_event(self, data):
+        match = re.search(r"You have already identified all of your possesions\.|That was all\.", data)
+        if match:
+           event.dispatc('identify_done')  
+  
+    def _dispatch_menu_events(self, data):
+        menu_type_match = re.search(r"(What would you like to identify first\?|
+        line = self._get_last_line()
+        #actually end is only on single pages, so I don't need to fire this event at all
+        #or do I after all if I use this for all pages
+        #match = re.search(r"\((?:(\d+) of (\d+)|end))\)", line)
+        match = re.search(r"\((?:(?:(\d+) of (\d+))|end)\)", line)
+        if match:
+           if self.menu_type in ['loot', 'identify', 'put_in', 'drop']:
+              for m in re.finditer(r"(.) - (.+?)$", data):
+                  event.dispatch(self.menu_type+'_item', m.group(1), m.group(2))
+           elif self.menu_type in ['spell']:
+             for m in re.finditer(r"(.) - (.*?)\s* (\d\*?)\s*([^\s]+)\s*(\d+)%", data)
+                  event.dispatch(self.menu_type+'_entry', *m.groups()[1:])
+           if match.group(1) is None or match.group(1) == match.group(2):
+              self.menu_type = None
+              event.dispatch('menu_done')
+           else:
+              event.dispatch('menu_more')
+       
     def cursor_is_on_player(self):
         """ Return whether or not the cursor is currently on the player. """
 
