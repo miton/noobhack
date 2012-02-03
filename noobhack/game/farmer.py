@@ -34,6 +34,8 @@ class Farmer:
         self.safe_pray = False
         self.keep_inv = 'JECidwtbgrFSplGkcnaumoeP'
         self.unidentified_count = 0 #not likely to be accurate
+        self.spell_menu = False
+        self.found_spell = False
  
     def listen(self):
         events.dispatcher.add_event_listener('unhungry', self._unhungry_handler)
@@ -44,6 +46,7 @@ class Farmer:
         events.dispatcher.add_event_listener('identify_item', self._identify_item_handler)
         events.dispatcher.add_event_listener('identify_done', self._identify_done_handler)
         events.dispatcher.add_event_listener('put_in_type', self._put_in_type_handler)
+        events.dispatcher.add_event_listener('lootlist_item', self._lootlist_item_handler)
         events.dispatcher.add_event_listener('loot_item', self._loot_item_handler)
         events.dispatcher.add_event_listener('put_in_item', self._put_in_item_handler)
         events.dispatcher.add_event_listener('drop_item', self._drop_item_handler)
@@ -151,23 +154,36 @@ class Farmer:
         self.hungry = False
     
     def _menu_done_handler(self, event):
+        if self.spell_menu and self.found_spell:
+           self.spell_menu = self.found_spell = False
+           return
         self.pending_input.append(' ')
     
     def _menu_more_handler(self, event):
+        if self.spell_menu and self.found_spell:
+           self.spell_menu = self.found_spell = False
+           return
         self.pending_input.append(' ')
 
     def _spell_entry_handler(self, event, key, name, level, school, fail):
+        self.spell_menu = True
+
         self.spells[key] = Spell(key, name, level, fail)
         self.spells_names[name] = key
         if self.mode == 'identify' and name == 'identify':
            if level[-1] != '*':
               self.pending_input.append(key)
+              self.found_spell = True
            else:
               #self.mode = 'read'
               self.mode = 'stash'
        
     def _drop_item_handler(self, event, key, name):
         pass
+
+    def _lootlist_item_handler(self, event, key, name):
+        if key not in self.keep_inv:
+           self.pending_input.append(key)
 
     def _put_in_item_handler(self, event, key, name):
         self.pending_input.append('a')

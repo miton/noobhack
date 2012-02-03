@@ -366,18 +366,21 @@ class Brain:
         #match = re.search(r"\((?:(\d+) of (\d+)|end))\)", line)
         match = re.search(r"\((?:(?:(\d+) of (\d+))|end)\)", data)
         if match:
-           if self.menu_type in ['loot', 'drop','inventory']:
+           if self.menu_type in ['loot', 'drop', 'inventory','lootlist']:
               for m in re.finditer(r"(.) - (.+?)(?:$|\x1b\[\d+;\d+(?:H|f))", data):
                   event.dispatch(self.menu_type+'_item', m.group(1), m.group(2))
            elif self.menu_type in ['spell']:
              for m in re.finditer(r"(.) - (.*?)\s* (\d\*?)\s*([^\s]+)\s*(\d+)%", data):
                   event.dispatch(self.menu_type+'_entry', *m.groups())
            elif self.menu_type in ['identify', 'put_in']: #only send one since we only care about all for identify and a for put_in... this is hackish but whatever
-              event.dispatch(self.menu_type+'_item',m.group(1),m.group(2))
+              event.dispatch(self.menu_type+'_item','a','a')
            if match.group(1) is None or match.group(1) == match.group(2):
-              if self.menu_type in ['put_in','identify','drop', 'loot', 'inventory']: #these menus do not automatically cancel
+              if self.menu_type in ['put_in','identify','drop', 'loot', 'inventory', 'lootlist']: #these menus do not automatically cancel
                  event.dispatch('menu_done')
-              self.menu_type_clear = True
+              if self.menu_type =='put_in':
+                 self.menu_type = 'lootlist'
+              else:
+                 self.menu_type_clear = True
               
 #              event.dispatch('menu_done') #this gets in the way of other menus.. some automatically cancel and some do not
 					  #spells, loot_do_what, put_in_type
