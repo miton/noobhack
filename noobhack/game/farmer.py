@@ -32,7 +32,7 @@ class Farmer:
         self.named = True
         self.sac = False
         self.safe_pray = False
-        self.keep_inv = 'JECidwtbgrFSplGkcnaumoeP'
+        self.keep_inv = 'JECidwtbgrFSplGkcnaumoePX'
         self.unidentified_count = 0 #not likely to be accurate
         self.spell_menu = False
         self.found_spell = False
@@ -243,12 +243,12 @@ class Farmer:
               self.mode = 'sac'
               self.kill_count = 0
            else:
-              pass
-              #self.mode = 'split'
-              #self.kill_count = 0
+              self.mode = 'split'
+              self.kill_count = 0
+              self.pending_input.append('w')
         elif self.mode == 'split':
            self.mode = 'kill'
-           #self.pending_input.append('w')
+           self.pending_input.append('w')
         self.named = False
  
     def _sacrifice_prompt_handler(self, event, value):
@@ -300,7 +300,7 @@ class Farmer:
         if self.mode == 'kill' or self.mode == 'sac':
            self.pending_input.append('i')
         elif self.mode == 'split':
-           self.pending_input.append('p')
+           self.pending_input.append('P')
            
     def _item_pickup_handler(self, event, shortcut, name):
         self.inventory[shortcut] = name
