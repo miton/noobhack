@@ -356,6 +356,7 @@ class Telnet:
         while not self.eof and self.sock_avail():
             self.fill_rawq()
             self.process_rawq()
+            logging.debug("loop in read_very_eager")
         return self.read_very_lazy()
 
     def read_eager(self):
