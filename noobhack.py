@@ -9,7 +9,7 @@ import locale
 import optparse 
 
 import cPickle as pickle
-
+import cProfile 
 import vt102 
 import logging
 import telnetlib
@@ -358,7 +358,8 @@ if __name__ == "__main__":
 
     hack = Noobhack()
     try:
-        curses.wrapper(hack.run)
+        #curses.wrapper(hack.run)
+        cProfile.run("curses.wrapper(hack.run)",'profile')
     except process.ProcError, e:
         pid, exit = os.wait()
         sys.stdout.write(e.stdout.read())
