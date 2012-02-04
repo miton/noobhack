@@ -410,7 +410,7 @@ class Brain:
         if match:
            event.dispatch("window_switch", int(match.group(1)))
 
-    def _dispatch_waiting_player_event(self, data):
+    def _dispatch_waiting_input_event(self, data):
         match = re.search(r"\x1b\[3z", data)
         if match:
            event.dispatch("waiting_input")
