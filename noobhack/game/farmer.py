@@ -28,7 +28,7 @@ class Farmer:
         self.spells_names = {}
         self.pending_input = []
         self.pending_input_real = pending
-        self.cur_location = (0,0)
+        self.cur_pos = (0,0)
         self.altar_free = None
         self.named = True
         self.sac = False
