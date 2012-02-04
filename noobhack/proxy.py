@@ -54,6 +54,7 @@ class Input:
                      return
            self.game.write(input)
         except Empty:
+          pass
 
 class Output:
     """
