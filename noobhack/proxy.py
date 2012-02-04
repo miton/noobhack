@@ -52,10 +52,8 @@ class Input:
               for callback in self.callbacks[:]:
                   if not callback(k):
                      return
+           self.game.write(input)
         except Empty:
-           pass
-
-        self.game.write(input)
 
 class Output:
     """
