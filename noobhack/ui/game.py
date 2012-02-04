@@ -1,6 +1,7 @@
 import re
 import curses 
 import locale
+import logging
 
 from noobhack.ui.common import styles, colors, get_color
 
@@ -19,8 +20,15 @@ class Game:
         the text from the in-memory terminal out and setting the color/style
         attributes appropriately.
         """
+        #window.scrollok(True)
         row_c = self.term.display[row].encode(self.code)
-        window.addstr(row, 0, row_c)
+        max_y, max_x = window.getmaxyx()
+        #logging.debug("_redraw_row -- row:%d code:%r", row, row_c)       
+        if row == max_y -1:
+           window.addstr(row, 0, row_c[:-1])
+           window.insch(row_c[-1])
+        else:
+           window.addstr(row, 0, row_c)
 
         row_a = self.term.attributes[row]
         for col, (char_style, foreground, background) in enumerate(row_a): 
