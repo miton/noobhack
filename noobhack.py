@@ -310,7 +310,7 @@ class Noobhack:
         wait_time = .1 
         #logging.debug("%f %s", time(), self.pending_input) 
         #NB: I don't understand how this works when we make up input since chances are it should just be blocked on the select?
-"""
+        foo="""
         before_select = time()
         if len(self.pending_input) > 0 and self.mode == 'bot':
            available = select.select(
@@ -329,7 +329,7 @@ class Noobhack:
         if self.nethack.fileno() in available:
             # Do our display logic.
             self.output_proxy.proxy()
-"""
+        """
         self.input_proxy.proxy()
         self.output_proxy.proxy()
 
