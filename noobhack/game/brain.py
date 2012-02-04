@@ -404,6 +404,16 @@ class Brain:
         col = row[x]
 
         return col
+    
+    def _dispatch_window_switch_events(self, data):
+        match = re.search(r"\1b\[2;(\d+)z", data)
+        if match:
+           event.dispatch("window_switch", int(match.group(1)))
+
+    def _dispatch_waiting_player_event(self, data):
+        match = re.search(r"\x1b\[3z", data)
+        if match:
+           event.dispatch("waiting_input")
 
     def process(self, data):
         """
@@ -455,12 +465,12 @@ class Brain:
         self._dispatch_menu_events(data)
 #        self._dispatch_inventory_list_event(data) #covered by menu
 
+        self._dispatch_waiting_input_event(data)
         event.dispatch('check_spot', self.char_at(69,18)) 
         #fort broken event
         if "--More--" not in self.term.display[self.term.cursor()[1]]:
             self.prev_cursor = self.term.cursor()
-        if self.cursor_is_on_player():
-            event.dispatch('waiting_input')
+            
         if self.menu_type_clear:
            self.menu_type_clear = False
            self.menu_type = None
