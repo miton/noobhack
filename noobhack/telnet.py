@@ -65,7 +65,7 @@ class Telnet:
             # size
             logging.debug("callback on option NAWS")
             #socket.sendall("%s%s\x1f" % (telnetlib.IAC, telnetlib.WILL))
-            soft_pack = pack(">cccHHcc", telnetlib.IAC, telnetlib.SB, telnetlib.NAWS, self.size[1]-1, self.size[0], telnetlib.IAC, telnetlib.SE)
+            soft_pack = pack(">cccHHcc", telnetlib.IAC, telnetlib.SB, telnetlib.NAWS, self.size[1], self.size[0], telnetlib.IAC, telnetlib.SE)
             logging.debug("soft_pack: %r size:%r", soft_pack, self.size)
             socket.sendall(soft_pack)
         elif command == telnetlib.DO and option == TSPEED:
