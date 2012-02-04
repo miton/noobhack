@@ -416,6 +416,11 @@ class Brain:
         if match:
            event.dispatch("waiting_input")
 
+    def _dispatch_you_hit_it_event(self,data):
+        match = re.search(r"You hit it\.", data)
+        if match:
+           event.dispatch("you_hit_it")
+
     def process(self, data):
         """
         Callback attached to the output proxy.
