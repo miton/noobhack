@@ -304,7 +304,8 @@ class Farmer:
            
     def _item_pickup_handler(self, event, shortcut, name):
         self.inventory[shortcut] = name
-        self.unidentified_count += 1
+        if shortcut not in self.keep_inv:
+           self.unidentified_count += 1
         if self.unidentified_count > 10:
            self.mode = 'identify'
 
