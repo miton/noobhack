@@ -292,7 +292,9 @@ class Farmer:
                   self.hungry = False
                   return
         logging.debug("did not find something to eat!")
-        self.pending_input.append('\r')
+        self.abort = True
+        del self.pending_input[:]
+#        self.pending_input.append('\r') #just loops now
 
     def _name_prompt_handler(self, event,value):
         self.pending_input.append(base64.encodestring(pack('<Q',self.name_number).rstrip('\x00')))
