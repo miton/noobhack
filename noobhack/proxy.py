@@ -4,6 +4,11 @@ interface that's running in the actual terminal.
 """
 
 import sys
+from Queue import Queue, Empty
+from threading import Thread
+
+def queue_stream(fd, queue):
+    queue.put(fd.read())
 
 class Input:
     """
@@ -14,7 +19,9 @@ class Input:
 
     def __init__(self, game):
         self.game = game
-        self.callbacks = [] 
+        self.callbacks = []
+        self.queue = Queue()
+        self.thread = Thread(target=queue_stream, args=(sys.stdin, queue))
 
     def register(self, callback):
         """
@@ -39,16 +46,16 @@ class Input:
         responsibility of the caller to make sure that reading from stdin won't
         block (e.g. by select or setting it to non-blocking).
         """
-        key = sys.stdin.read(1)
+        try:
+           input = self.queue.get_nowait()
+           for k in input:
+              for callback in self.callbacks[:]:
+                  if not callback(k):
+                     return
+        except Empty:
+           pass
 
-        # Make the callback set a list because callbacks should be able to 
-        # unregister themselves if they want and they can't do that while 
-        # iterating over the set, so we need a copy.
-        for callback in self.callbacks[:]:
-            if callback(key) is False:
-                return
-
-        self.game.write(key)
+        self.game.write(input)
 
 class Output:
     """
@@ -59,7 +66,9 @@ class Output:
 
     def __init__(self, game):
         self.game = game
-        self.callbacks = [] 
+        self.callbacks = []
+        #self.queue = Queue()
+        #self.thread = Thread(target=queue_stream, args=(sys.
 
     def register(self, callback):
         """
