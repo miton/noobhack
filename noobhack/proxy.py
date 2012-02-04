@@ -21,7 +21,7 @@ class Input:
         self.game = game
         self.callbacks = []
         self.queue = Queue()
-        self.thread = Thread(target=queue_stream, args=(sys.stdin, queue))
+        self.thread = Thread(target=queue_stream, args=(sys.stdin, self.queue))
 
     def register(self, callback):
         """
