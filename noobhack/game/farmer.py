@@ -151,6 +151,7 @@ class Farmer:
                    del self.pending_input[:]
         if len(self.pending_input) > 0:#else:# not an else because we need to process the input we just generated
            if len(self.pending_input) > 1 and self.pending_input[1] != '\r' and len(self.pending_input) != 2:
+              #the special cases: name input, pray/loot/offer
               logging.debug("waiting_input found more than 1 and not special case: %s", self.pending_input)
            key = self.pending_input.pop(0)
            self.pending_input_real.append(key)
@@ -297,7 +298,7 @@ class Farmer:
 #        self.pending_input.append('\r') #just loops now
 
     def _name_prompt_handler(self, event,value):
-        self.pending_input.append(base64.encodestring(pack('<Q',self.name_number).rstrip('\x00')))
+        self.pending_input.append(base64.encodestring(pack('<Q',self.name_number).rstrip('\x00')).rstrip('='))
         self.pending_input.append('\r')
         self.name_number += 1
         self.named = True

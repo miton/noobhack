@@ -375,7 +375,8 @@ class Brain:
            elif self.menu_type in ['identify', 'put_in']: #only send one since we only care about all for identify and a for put_in... this is hackish but whatever
               event.dispatch(self.menu_type+'_item','a','a')
            if match.group(1) is None or match.group(1) == match.group(2):
-              if self.menu_type in ['put_in','identify','drop', 'loot', 'inventory', 'lootlist']: #these menus do not automatically cancel
+              if self.menu_type in ['put_in','identify','drop', 'loot', 'inventory', 'lootlist','spell']: #these menus do not automatically cancel
+                 #actually, spell does but it is special cased in the handler
                  event.dispatch('menu_done')
               if self.menu_type =='put_in':
                  self.menu_type = 'lootlist'
