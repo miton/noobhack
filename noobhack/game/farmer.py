@@ -105,7 +105,7 @@ class Farmer:
                     else:
                        self.pending_input.append('y')
               else:
-                    self.abort == True
+                    self.abort = True
                     logging.error('not on stash or altar, aborting! %s', self.cur_pos)
                     del self.pending_input[:]
            elif self.mode == 'sac':
