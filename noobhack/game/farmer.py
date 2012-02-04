@@ -147,12 +147,13 @@ class Farmer:
                    self.abort = True
                    logging.error('not on stash or altar in stash, aborting %s', self.cur_pos)
                    del self.pending_input[:]
-        else:
+        if len(self.pending_input) > 0:#else:# not an else because we need to process the input we just generated
            if len(self.pending_input) > 1 and self.pending_input[1] != '\r' and len(self.pending_input) != 2:
               logging.debug("waiting_input found more than 1 and not special case: %s", self.pending_input)
            key = self.pending_input.pop(0)
            self.pending_input_real.append(key)
-
+        else:
+           logging.debug("end of waiting_input, nothing to do")
 
 
     def _on_altar_handler(self, event):
