@@ -26,7 +26,8 @@ class Farmer:
         self.inventory = {}
         self.spells = {}
         self.spells_names = {}
-        self.pending_input = pending
+        self.pending_input = []
+        self.pending_input_real = pending
         self.cur_location = (0,0)
         self.altar_free = None
         self.named = True
@@ -87,7 +88,7 @@ class Farmer:
            del self.pending_input[:]
            return
 
-	if len(self.pending_input) == 0:
+        if len(self.pending_input) == 0:
            if self.mode == 'kill' or self.mode == 'split':
               if self.cur_pos == altar_pos:
                  self.pending_input.append('n')
@@ -146,6 +147,13 @@ class Farmer:
                    self.abort = True
                    logging.error('not on stash or altar in stash, aborting %s', self.cur_pos)
                    del self.pending_input[:]
+        else:
+           if len(self.pending_input) > 1 and self.pending_input[1] != '\r' and len(self.pending_input) != 2:
+              logging.debug("waiting_input found more than 1 and not special case: %s", self.pending_input)
+           key = self.pending_input.pop(0)
+           self.pending_input_real.append(key)
+
+
 
     def _on_altar_handler(self, event):
         pass
