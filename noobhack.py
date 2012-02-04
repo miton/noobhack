@@ -310,7 +310,7 @@ class Noobhack:
         wait_time = .1 
         #logging.debug("%f %s", time(), self.pending_input) 
         #NB: I don't understand how this works when we make up input since chances are it should just be blocked on the select?
-
+"""
         before_select = time()
         if len(self.pending_input) > 0 and self.mode == 'bot':
            available = select.select(
@@ -329,7 +329,10 @@ class Noobhack:
         if self.nethack.fileno() in available:
             # Do our display logic.
             self.output_proxy.proxy()
-        
+"""
+        self.input_proxy.proxy()
+        self.output_proxy.proxy()
+
         if len(self.pending_input) > 0 and time() > self.last_input + wait_time and self.mode == 'bot' and not self.farmer.abort:
             first = self.pending_input.pop(0)
             self.input_proxy.game.write(first)
