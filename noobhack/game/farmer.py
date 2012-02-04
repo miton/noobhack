@@ -98,8 +98,10 @@ class Farmer:
                  elif self.altar_free:
                     if random() < .10: #so we don't wait forever with scare monster on altar, plus so we get rations even when just killing
                        self.pending_input.append('y')
+                       logging.debug("in kill/split randomly move to altar")
                     else:
                        self.pending_input.append('.')
+                       logging.debug("in kill/split just waiting")
                  else:
                     if not self.named and self.sac:
                        self.pending_input.append('C')
