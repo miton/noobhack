@@ -469,6 +469,7 @@ class Brain:
         self._dispatch_identify_done_event(data)
         #self._dispatch_put_in_what_type_event(data) #covered by menu
         self._dispatch_menu_events(data)
+        self._dispatch_you_hit_it_event(data)
 #        self._dispatch_inventory_list_event(data) #covered by menu
         event.dispatch('check_spot', self.char_at(69,18))	
         self._dispatch_waiting_input_event(data)
