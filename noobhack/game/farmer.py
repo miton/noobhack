@@ -175,10 +175,10 @@ class Farmer:
 
 
     def _divides_handler(self, event):
-        self.divides_count += 1
-        if self.divides_count >= 3:
+        self.divide_count += 1
+        if self.divide_count >= 3:
            self.mode = 'heal'
-           self.divides_count = 0
+           self.divide_count = 0
 
     def _direction_prompt_handler(self, event):
         self.pending_input.append('u')
