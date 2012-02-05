@@ -421,6 +421,16 @@ class Brain:
         if match:
            event.dispatch("you_hit_it")
 
+    def _dispatch_divides_events(self, data):
+        match = re.search("divides as you hit it", data)
+        if match:
+           event.dispatch("divides")
+ 
+    def _dispatch_direction_prompt_event(self, data):
+        match = re.search("Which direction\?", data)
+        if match:
+           event.dispatch("direction_prompt")
+
     def process(self, data):
         """
         Callback attached to the output proxy.
@@ -470,8 +480,10 @@ class Brain:
         #self._dispatch_put_in_what_type_event(data) #covered by menu
         self._dispatch_menu_events(data)
         self._dispatch_you_hit_it_event(data)
+        self._dispatch_divides_events(data)
+        self._dispatch_direction_prompt_event(data)
 #        self._dispatch_inventory_list_event(data) #covered by menu
-        event.dispatch('check_spot', self.char_at(69,18))	
+        event.dispatch('check_spot', self.char_at(9,13))	
         self._dispatch_waiting_input_event(data)
         
         #fort broken event

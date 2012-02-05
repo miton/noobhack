@@ -6,8 +6,8 @@ from struct import pack
 from random import random
 from collections import namedtuple
 
-altar_pos = (69,18)
-stash_pos = (70,19)
+altar_pos = (9,13)
+stash_pos = (8,14)
 
 Spell = namedtuple('Spell', ['key', 'name', 'remembered', 'fail'])
 
@@ -37,6 +37,8 @@ class Farmer:
         self.unidentified_count = 0 #not likely to be accurate
         self.spell_menu = False
         self.found_spell = False
+        self.heal = True
+        self.divide_count = 0
  
     def listen(self):
         events.dispatcher.add_event_listener('unhungry', self._unhungry_handler)
@@ -81,6 +83,9 @@ class Farmer:
         events.dispatcher.add_event_listener("see_no_monster", self._see_no_monster_handler)
         events.dispatcher.add_event_listener("unknown_direction", self._unknown_direction_handler)
         events.dispatcher.add_event_listener("you_hit_it", self._you_hit_it_handler)
+        events.dispatcher.add_event_listener("divides", self._divides_handler)
+        events.dispatcher.add_event_listener("direction_prompt", self._direction_prompt_handler)
+
         #events.dispatcher.add_event_listener("", self.__handler)
  
     def _waiting_input_handler(self,event):
@@ -92,13 +97,13 @@ class Farmer:
         if len(self.pending_input) == 0:
            if self.mode == 'kill' or self.mode == 'split':
               if self.cur_pos == altar_pos:
-                 self.pending_input.append('n')
+                 self.pending_input.append('b')
               elif self.cur_pos == stash_pos: 
 	         if self.hungry:
                     self.pending_input.append('e')
                  elif self.altar_free:
                     if random() < .10: #so we don't wait forever with scare monster on altar, plus so we get rations even when just killing
-                       self.pending_input.append('y')
+                       self.pending_input.append('u')
                        logging.debug("in kill/split randomly move to altar")
                     else:
                        self.pending_input.append('.')
@@ -107,7 +112,7 @@ class Farmer:
                     if not self.named and self.sac:
                        self.pending_input.append('C')
                     else:
-                       self.pending_input.append('y')
+                       self.pending_input.append('u')
               else:
                     self.abort = True
                     logging.error('not on stash or altar, aborting! %s', self.cur_pos)
@@ -115,12 +120,12 @@ class Farmer:
            elif self.mode == 'sac':
               if self.cur_pos == stash_pos:
                  if self.altar_free:
-                    self.pending_input.append('y')
+                    self.pending_input.append('u')
                  else:
                     if not self.named:
                        self.pending_input.append('C')
                     else:
-                       self.pending_input.append('y')
+                       self.pending_input.append('u')
               elif self.cur_pos == altar_pos:
                  self.pending_input.append('#')
               else:
@@ -136,7 +141,7 @@ class Farmer:
                    #else:
                    self.pending_input.append('Z')
                 elif self.cur_pos == altar_pos:
-                      self.pending_input.append('n')      
+                      self.pending_input.append('b')      
                 else:
                    self.abort = True
                    logging.error('not on stash or altar in identify, aborting %s', self.cur_pos)
@@ -145,11 +150,20 @@ class Farmer:
                 if self.cur_pos == stash_pos:
                    self.pending_input.append('#')
                 elif self.cur_pos == altar_pos:
-                   self.pending_input.append('n')
+                   self.pending_input.append('b')
                 else:
                    self.abort = True
                    logging.error('not on stash or altar in stash, aborting %s', self.cur_pos)
                    del self.pending_input[:]
+           elif self.mode == 'heal':
+                if self.cur_pos == stash_pos:
+                   self.pending_input.append('Z')
+                elif self.cur_pos == altar_pos:
+                   self.pending_input.append('b')
+                else:
+                   self.abort = True
+                   logging.error('not on stash or altar in heal, aborting %s', self.cur_pos)
+
         if len(self.pending_input) > 0:#else:# not an else because we need to process the input we just generated
            if len(self.pending_input) > 1 and self.pending_input[1] != '\r' and len(self.pending_input) != 2:
               #the special cases: name input, pray/loot/offer
@@ -160,6 +174,15 @@ class Farmer:
            logging.debug("end of waiting_input, nothing to do")
 
 
+    def _divides_handler(self, event):
+        self.divides_count += 1
+        if self.divides_count >= 3:
+           self.mode = 'heal'
+           self.divides_count = 0
+
+    def _direction_prompt_handler(self, event):
+        self.pending_input.append('u')
+ 
     def _on_altar_handler(self, event):
         pass
     
@@ -190,6 +213,13 @@ class Farmer:
            else:
               #self.mode = 'read'
               self.mode = 'stash'
+        elif self.mode == 'heal' and name == 'extra healing':
+           if level[-1] != '*':
+              self.pending_input.append(key)
+              self.found_spell = True
+              self.mode = 'split'
+           else:
+              logging.debug("couldnt heal because forgot it")
        
     def _drop_item_handler(self, event, key, name):
         pass
@@ -325,20 +355,23 @@ class Farmer:
            self.mode = 'identify'
 
     def _hp_change_handler(self, event, value):
-        if value <= 100:
+        if value <= 100 and not self.abort:
            logging.error("aborting due to low hp")
            #XXX: turn this back on before using! 
            self.abort = True
     
     def _hunger_handler(self, event, value):
         self.hungry = True
-        if value != 'Hungry':
+        if value != 'Hungry' and not self.abort:
            logging.error("aborting due to more than hungry")
            self.abort = True
     
     def _burden_handler(self, event, value):
-        self.abort = True
-        logging.error("aborting due to burden")
+        
+        if not self.abort:
+           logging.error("aborting due to burden")
+           self.abort = True
+           del self.pending_input[:]
  
     def _teleport_prompt_handler(self, event):
         self.pending_input.append('.')
