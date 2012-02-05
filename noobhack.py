@@ -337,6 +337,8 @@ class Noobhack:
             self.nethack.send(first)
             logging.debug("sending %s, left: %s", first, self.pending_input)
             self.last_input = time()
+        
+        return True
 
 
     def run(self, window):
