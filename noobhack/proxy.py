@@ -4,6 +4,7 @@ interface that's running in the actual terminal.
 """
 
 import sys
+import logging
 
 class Input:
     """
