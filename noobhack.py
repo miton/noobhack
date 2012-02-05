@@ -254,7 +254,7 @@ class Noobhack:
         try:
             conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             logging.debug("connecting to NAO")
-            conn.connect(('nethack.alt.org', 22))
+            conn.connect(('nethack.alt.org', 23))
             logging.debug("connected to NAO")
             
         except IOError, error:
