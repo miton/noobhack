@@ -48,6 +48,7 @@ class Input:
         if not keys:
            self.input_socket.shutdown(socket.SHUT_RD)
            self.game.shutdown(socket.SHUT_WR)
+           logging.error("input_proxy recv'd nothing, shutting down")
            return False
 
         # Make the callback set a list because callbacks should be able to 
@@ -102,8 +103,8 @@ class Output:
         output = self.game.recv(8*1024)
         if not output:
            self.game.shutdown(socket.SHUT_RD)
-           self.output_socket.shutdown(socket.SHUTWR)
-           logging("output_proxy recv got nothing, shutdown")
+           self.output_socket.shutdown(socket.SHUT_WR)
+           logging.error("output_proxy recv got nothing, shutdown")
            return False
 
         logging.debug("output_proxy recv: %r", output)

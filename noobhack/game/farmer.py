@@ -216,12 +216,12 @@ class Farmer:
         self.mode = 'kill' 
 
     def _died_handler(self, event):
-        logging.debug("aborting because we died (and were hopefully saved)")
+        logging.error("aborting because we died (and were hopefully saved)")
         self.abort = True
         del self.pending_input[:]
 
     def _stoning_handler(self, event):
-        logging.debug("aborting due to stoning")
+        logging.error("aborting due to stoning")
         self.abort = True
         del self.pending_input[:]
 
@@ -293,7 +293,7 @@ class Farmer:
                   self.pending_input.append(c)
                   self.hungry = False
                   return
-        logging.debug("did not find something to eat!")
+        logging.error("did not find something to eat!")
         self.abort = True
         del self.pending_input[:]
 #        self.pending_input.append('\r') #just loops now
