@@ -37,7 +37,7 @@ class Farmer:
         self.unidentified_count = 0 #not likely to be accurate
         self.spell_menu = False
         self.found_spell = False
-        self.heal = True
+        self.heal = False
         self.divide_count = 0
  
     def listen(self):
@@ -176,7 +176,7 @@ class Farmer:
 
     def _divides_handler(self, event):
         self.divide_count += 1
-        if self.divide_count >= 3:
+        if self.divide_count >= 3 and self.heal:
            self.mode = 'heal'
            self.divide_count = 0
 
