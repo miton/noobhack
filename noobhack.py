@@ -298,11 +298,6 @@ class Noobhack:
             # done.
         #    self.mode = "game"
 
-        self.game.redraw(window)
-        if self.mode == "help":
-            self.helper.redraw(window, self.options.crumbs)
-
-        window.refresh()
 
         if self.playing:
             self.save()
@@ -345,7 +340,7 @@ class Noobhack:
 
         # We prefer to let the console pick the colors for the bg/fg instead of
         # using what curses thinks looks good.
-        curses.use_default_colors()
+#        curses.use_default_colors()
 
         while True:
             self._game(window)
@@ -365,6 +360,7 @@ if __name__ == "__main__":
           conn, addr = listener.accept()
           logging.debug("connection from %s", addr)
           hack = Noobhack(conn)
+          hack.run(None)
     except process.ProcError, e:
         pid, exit = os.wait()
         sys.stdout.write(e.stdout.read())

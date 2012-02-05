@@ -40,8 +40,9 @@ class Input:
         responsibility of the caller to make sure that reading from stdin won't
         block (e.g. by select or setting it to non-blocking).
         """
+        logging.debug("input_proxy getting from input_socket")
         key = self.input_socket.recv(1)
-
+	logging.debug("got %r from input_socket", key)
         # Make the callback set a list because callbacks should be able to 
         # unregister themselves if they want and they can't do that while 
         # iterating over the set, so we need a copy.
@@ -86,7 +87,9 @@ class Output:
         sure that the call to `self.game.read()` will not block (e.g. by using
         select or setting the fd to non-blocking mode)
         """
+        logging.debug("output_proxy recv")
         output = self.game.recv(8*1024)
+        logging.debug("output_proxy recv: %r", output)
 
         # Make the callback set a list because callbacks should be able to 
         # unregister themselves if they want and they can't do that while 
@@ -94,3 +97,4 @@ class Output:
         for callback in self.callbacks[:]:
             callback(output)
         self.output_socket.sendall(output)
+        logging.debug("output_proxy sent")
