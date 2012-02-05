@@ -427,7 +427,7 @@ class Brain:
            event.dispatch("divides")
  
     def _dispatch_direction_prompt_event(self, data):
-        match = re.search("Which direction\?", data)
+        match = re.search("In what direction\?", data)
         if match:
            event.dispatch("direction_prompt")
 
