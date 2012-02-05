@@ -253,7 +253,7 @@ class Noobhack:
 
         try:
             conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            conn.connect(('nethack.alt.org', '22'))
+            conn.connect(('nethack.alt.org', 22))
             
         except IOError, error:
             logging.error("Unable to open nethack: `%s'\n" % error)
