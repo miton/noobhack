@@ -67,7 +67,7 @@ class Game:
         window.erase()
         for row_index in xrange(len(self.term.display)):
             redraw = False
-            for col_index in xrange(len(self.term.display[row_index]):
+            for col_index in xrange(len(self.term.display[row_index])):
                 if self.term.display[row_index][col_index] != self.old_display[row_index][col_index] or
                    self.term.attributes[row_index][col_index] != self.old_attributes[row_index][col_index]:
                    redraw = True
