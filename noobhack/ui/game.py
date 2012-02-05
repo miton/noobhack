@@ -14,7 +14,7 @@ class Game:
     def __init__(self, term):
         self.term = term
         self.old_display = deepcopy(self.term.display) #doesn't handle first frame properly
-        self.old_attrib = deepcopy(self.term.attibutes)
+        self.old_attrib = deepcopy(self.term.attributes)
         self.code = locale.getpreferredencoding()
 
     def _redraw_row(self, window, row):
