@@ -19,7 +19,7 @@ class Farmer:
         self.last_sac = None
         self.kill_count = 0
         self.kill_total = 0
-        self.mode = 'kill'
+        self.mode = 'split' #'kill'
         self.name_number = 40
         self.hungry = False
         self.abort = False
