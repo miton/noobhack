@@ -43,7 +43,7 @@ class Input:
         """
         logging.debug("input_proxy getting from input_socket")
         keys = self.input_socket.recv(1024)
-	logging.debug("got %r from input_socket", key)
+	logging.debug("got %r from input_socket", keys)
         if not keys:
            self.input_socket.shutdown(socket.SHUT_RD)
            self.game.shutdown(socket.SHUT_WR)
