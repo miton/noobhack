@@ -317,7 +317,7 @@ class Noobhack:
            )
         logging.debug("select timediff: %s", time() - before_select)
 	
-        if len(r) > 0:
+        if len(e) > 0:
            loggging.debug("error on socket")
            return False
 
