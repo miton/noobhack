@@ -60,6 +60,7 @@ class Input:
                to_send.append(key)
 
         self.game.send(''.join(to_send))
+        return True
 
 class Output:
     """
@@ -113,3 +114,4 @@ class Output:
             callback(output)
         self.output_socket.sendall(output)
         logging.debug("output_proxy sent")
+        return True
