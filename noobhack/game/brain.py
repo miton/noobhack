@@ -235,13 +235,12 @@ class Brain:
             if match is not None:
                 event.dispatch("trap-door")
 
-    def _dispatch_turn_change_event(self):
+    def _dispatch_turn_change_event(self,data):
         """
         Dispatch an even each time a turn advances.
         """
 
-        line = self._get_last_line()
-        match = re.search("T:(\\d+)", line)
+        match = re.search("T:(\\d+)", data)
         if match is not None:
             turn = int(match.groups()[0])
             if turn != self.turn:
@@ -437,7 +436,7 @@ class Brain:
         """
        # logging.debug("brain process " + data)
 
-        if "--More--" in self.term.display[self.term.cursor()[1]]:
+        if "--More--" in data: #self.term.display[self.term.cursor()[1]]:
            event.dispatch('more')
         
 	#this is kind of terrible and i'm not even sure i like the event idea in the first place
@@ -448,7 +447,7 @@ class Brain:
         self._dispatch_teleport_prompt_event(data) #should be first
         #self._dispatch_status_events(data)
         #self._dispatch_intrinsic_events(data)
-        self._dispatch_turn_change_event()
+        self._dispatch_turn_change_event(data)
         #self._dispatch_trap_door_event(data)
         #self._dispatch_level_change_event()
         #self._dispatch_level_feature_events(data)
