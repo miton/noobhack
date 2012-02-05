@@ -64,7 +64,7 @@ class Game:
         Repaint the screen with the new contents of our terminal emulator...
         """
 
-        window.erase()
+        #window.erase()
         for row_index in xrange(len(self.term.display)):
             redraw = False
             for col_index in xrange(len(self.term.display[row_index])):
