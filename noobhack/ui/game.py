@@ -3,6 +3,7 @@ import curses
 import locale
 import logging
 
+from copy import deepcopy
 from noobhack.ui.common import styles, colors, get_color
 
 class Game:
@@ -12,6 +13,8 @@ class Game:
 
     def __init__(self, term):
         self.term = term
+        self.old_display = deepcopy(self.term.display) #doesn't handle first frame properly
+        self.old_attrib = deepcopy(self.term.attibutes)
         self.code = locale.getpreferredencoding()
 
     def _redraw_row(self, window, row):
@@ -63,7 +66,14 @@ class Game:
 
         window.erase()
         for row_index in xrange(len(self.term.display)):
-            self._redraw_row(window, row_index)
+            redraw = False
+            for col_index in xrange(len(self.term.display[row_index]):
+                if self.term.display[row_index][col_index] != self.old_display[row_index][col_index] or
+                   self.term.attributes[row_index][col_index] != self.old_attributes[row_index][col_index]:
+                   redraw = True
+                   break
+            if redraw:
+               self._redraw_row(window, row_index)
 
         # Don't forget to move the cursor to where it is in game...
         cur_x, cur_y = self.term.cursor()
@@ -71,5 +81,7 @@ class Game:
 
         # Finally, redraw the whole thing.
         window.noutrefresh()
+        self.old_display = deepcopy(self.term.display)
+        self.old_attrib = deepcopy(self.term.attributes)
 
 
