@@ -314,25 +314,26 @@ class Noobhack:
         before_select = time()
         if len(self.pending_input) > 0 and self.mode == 'bot':
            available = select.select(
-            [self.nethack.fileno(), self.input_socket], [], []
+            [self.nethack, self.input_socket], [], []
            ,wait_time / 2.0)[0]
         else:
            available = select.select(
-            [self.nethack.fileno(), self.input_socket], [], []
+            [self.nethack, self.input_socket], [], []
            )[0]
         logging.debug("select timediff: %s", time() - before_select)
 	
-        if sys.stdin.fileno() in available:
+        if self.input_socket in available:
             # Do our input logic.
             self.input_proxy.proxy()
 
-        if self.nethack.fileno() in available:
+        if self.nethack in available:
             # Do our display logic.
             self.output_proxy.proxy()
         
         if len(self.pending_input) > 0 and time() > self.last_input + wait_time and self.mode == 'bot' and not self.farmer.abort:
             first = self.pending_input.pop(0)
-            self.input_proxy.game.write(first)
+            #self.input_proxy.game.write(first)
+            self.nethack.send(first)
             logging.debug("sending %s, left: %s", first, self.pending_input)
             self.last_input = time()
 

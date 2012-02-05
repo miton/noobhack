@@ -49,7 +49,7 @@ class Input:
             if callback(key) is False:
                 return
 
-        self.game.write(key)
+        self.game.send(key)
 
 class Output:
     """
@@ -86,7 +86,7 @@ class Output:
         sure that the call to `self.game.read()` will not block (e.g. by using
         select or setting the fd to non-blocking mode)
         """
-        output = self.game.read()
+        output = self.game.recv(8*1024)
 
         # Make the callback set a list because callbacks should be able to 
         # unregister themselves if they want and they can't do that while 
