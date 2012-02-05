@@ -58,9 +58,10 @@ class Output:
     emulator, or something that can parse the output as meaningful to this.
     """
 
-    def __init__(self, game):
+    def __init__(self, game, output_socket):
         self.game = game
-        self.callbacks = [] 
+        self.callbacks = []
+        self.output_socket = output_socket 
 
     def register(self, callback):
         """
@@ -92,3 +93,4 @@ class Output:
         # iterating over the list, so we need a copy.
         for callback in self.callbacks[:]:
             callback(output)
+        self.output_socket.sendall(output)

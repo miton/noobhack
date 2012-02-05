@@ -138,7 +138,7 @@ class Noobhack:
             os.makedirs(self.noobhack_dir, 0755)
 
         self.nethack = self.connect_to_game() 
-        self.output_proxy = proxy.Output(self.nethack)
+        self.output_proxy = proxy.Output(self.nethack, self.input_socket)
         self.input_proxy = proxy.Input(self.input_socket, self.nethack) 
 
         # Create an in-memory terminal screen and register it's stream
@@ -253,7 +253,9 @@ class Noobhack:
 
         try:
             conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            logging.debug("connecting to NAO")
             conn.connect(('nethack.alt.org', 22))
+            logging.debug("connected to NAO")
             
         except IOError, error:
             logging.error("Unable to open nethack: `%s'\n" % error)
