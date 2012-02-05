@@ -42,16 +42,24 @@ class Input:
         block (e.g. by select or setting it to non-blocking).
         """
         logging.debug("input_proxy getting from input_socket")
-        key = self.input_socket.recv(1)
+        keys = self.input_socket.recv(1024)
 	logging.debug("got %r from input_socket", key)
+        if not keys:
+           self.input_socket.shutdown(socket.SHUT_RD)
+           self.game.shutdown(socket.SHUT_WR)
+           return False
+
         # Make the callback set a list because callbacks should be able to 
         # unregister themselves if they want and they can't do that while 
         # iterating over the set, so we need a copy.
-        for callback in self.callbacks[:]:
-            if callback(key) is False:
-                return
+        to_send = []
+        for key in keys:
+            for callback in self.callbacks[:]:
+               if callback(key) is False:
+                  continue
+               to_send.append(key)
 
-        self.game.send(key)
+        self.game.send(''.join(to_send))
 
 class Output:
     """
@@ -90,6 +98,12 @@ class Output:
         """
         logging.debug("output_proxy recv")
         output = self.game.recv(8*1024)
+        if not output:
+           self.game.shutdown(socket.SHUT_RD)
+           self.output_socket.shutdown(socket.SHUTWR)
+           logging("output_proxy recv got nothing, shutdown")
+           return False
+
         logging.debug("output_proxy recv: %r", output)
 
         # Make the callback set a list because callbacks should be able to 

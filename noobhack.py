@@ -308,22 +308,28 @@ class Noobhack:
 
         before_select = time()
         if len(self.pending_input) > 0 and self.mode == 'bot':
-           available = select.select(
+           available,w,e = select.select(
             [self.nethack, self.input_socket], [], []
-           ,wait_time / 2.0)[0]
+           ,wait_time / 2.0)
         else:
-           available = select.select(
+           available,w,e = select.select(
             [self.nethack, self.input_socket], [], []
-           )[0]
+           )
         logging.debug("select timediff: %s", time() - before_select)
 	
+        if len(r) > 0:
+           loggging.debug("error on socket")
+           return False
+
         if self.input_socket in available:
             # Do our input logic.
-            self.input_proxy.proxy()
+            if not self.input_proxy.proxy():
+               return False
 
         if self.nethack in available:
             # Do our display logic.
-            self.output_proxy.proxy()
+            if not self.output_proxy.proxy():
+               return False
         
         if len(self.pending_input) > 0 and time() > self.last_input + wait_time and self.mode == 'bot' and not self.farmer.abort:
             first = self.pending_input.pop(0)
@@ -342,8 +348,8 @@ class Noobhack:
         # using what curses thinks looks good.
 #        curses.use_default_colors()
 
-        while True:
-            self._game(window)
+        while self._game(window):
+           pass
 
 if __name__ == "__main__":
     locale.setlocale(locale.LC_ALL, "")
