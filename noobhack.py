@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import select
+import socket
 import curses
 import locale
 import optparse 
@@ -114,7 +115,7 @@ class Noobhack:
 
     noobhack_dir = os.path.expanduser("~/.noobhack")
 
-    def __init__(self, toggle_help="\t", toggle_map="`"):
+    def __init__(self, conn, toggle_help="\t", toggle_map="`"):
         self.options = parse_options()
 
         if self.options.save:
@@ -131,12 +132,14 @@ class Noobhack:
         self.last_input = time()
         self.pending_input = []
 
+        self.input_socket = conn
+
 	if not os.path.exists(self.noobhack_dir):
             os.makedirs(self.noobhack_dir, 0755)
 
         self.nethack = self.connect_to_game() 
         self.output_proxy = proxy.Output(self.nethack)
-        self.input_proxy = proxy.Input(self.nethack) 
+        self.input_proxy = proxy.Input(self.input_socket, self.nethack) 
 
         # Create an in-memory terminal screen and register it's stream
         # processor with the output proxy.
@@ -249,16 +252,11 @@ class Noobhack:
         """
 
         try:
-            if self.options.local:
-                conn = process.Local(self.options.debug)
-            else:
-                conn = telnet.Telnet(
-                    self.options.host,
-                    self.options.port, size()
-                )
-            conn.open()
+            conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            conn.connect(('nethack.alt.org', '22'))
+            
         except IOError, error:
-            sys.stderr.write("Unable to open nethack: `%s'\n" % error)
+            logging.error("Unable to open nethack: `%s'\n" % error)
             raise 
 
         return conn
@@ -314,11 +312,11 @@ class Noobhack:
         before_select = time()
         if len(self.pending_input) > 0 and self.mode == 'bot':
            available = select.select(
-            [self.nethack.fileno(), sys.stdin.fileno()], [], []
+            [self.nethack.fileno(), self.input_socket], [], []
            ,wait_time / 2.0)[0]
         else:
            available = select.select(
-            [self.nethack.fileno(), sys.stdin.fileno()], [], []
+            [self.nethack.fileno(), self.input_socket], [], []
            )[0]
         logging.debug("select timediff: %s", time() - before_select)
 	
@@ -354,12 +352,16 @@ if __name__ == "__main__":
     
     logging.basicConfig(filename="noobhack.log",level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-    logging.debug("started noobhack")
-
-    hack = Noobhack()
     try:
         #curses.wrapper(hack.run)
-        cProfile.run("curses.wrapper(hack.run)",'profile')
+        #cProfile.run("curses.wrapper(hack.run)",'profile')
+        listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        listener.bind(('', 2000))
+        while True:
+          listener.listen(1)
+          conn, addr = listener.accept()
+          logging.debug("connection from %s", addr)
+          hack = Noobhack(conn)
     except process.ProcError, e:
         pid, exit = os.wait()
         sys.stdout.write(e.stdout.read())

@@ -12,8 +12,9 @@ class Input:
     the input is not forwarded to the game.
     """
 
-    def __init__(self, game):
+    def __init__(self, input_socket, game):
         self.game = game
+        self.input_socket = input_socket
         self.callbacks = [] 
 
     def register(self, callback):
@@ -39,7 +40,7 @@ class Input:
         responsibility of the caller to make sure that reading from stdin won't
         block (e.g. by select or setting it to non-blocking).
         """
-        key = sys.stdin.read(1)
+        key = self.input_socket.recv(1)
 
         # Make the callback set a list because callbacks should be able to 
         # unregister themselves if they want and they can't do that while 
