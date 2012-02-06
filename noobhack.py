@@ -302,7 +302,7 @@ class Noobhack:
         if self.playing:
             self.save()
 
-        wait_time = .1 
+        wait_time = .01 
         #logging.debug("%f %s", time(), self.pending_input) 
         #NB: I don't understand how this works when we make up input since chances are it should just be blocked on the select?
 
