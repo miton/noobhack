@@ -482,7 +482,8 @@ class Brain:
         self._dispatch_divides_events(data)
         self._dispatch_direction_prompt_event(data)
 #        self._dispatch_inventory_list_event(data) #covered by menu
-        event.dispatch('check_spot', self.char_at(9,13))	
+        #event.dispatch('check_spot', self.char_at(9,13))	
+        event.dispatch('check_spot', self.char_at(69,18)
         self._dispatch_waiting_input_event(data)
         
         #fort broken event
