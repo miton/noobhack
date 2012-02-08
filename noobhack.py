@@ -15,11 +15,12 @@ import vt102
 import logging
 import telnetlib
 
-from struct import unpack
+from struct import unpack, pack
 from time import time,sleep 
 from noobhack import telnet, process, proxy
 from noobhack.game import player, dungeon, brain, farmer
 
+from telnetlib import IAC, WILL, NAWS
 from noobhack.ui.game import *
 from noobhack.ui.helper import *
 from noobhack.ui.minimap import *
@@ -271,6 +272,7 @@ class Noobhack:
             logging.debug("connecting to NAO")
             conn.connect(('nethack.alt.org', 23))
             logging.debug("connected to NAO")
+            conn.sendall(pack(">ccc", IAC, WILL, NAWS))
             
         except IOError, error:
             logging.error("Unable to open nethack: `%s'\n" % error)
