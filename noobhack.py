@@ -142,7 +142,7 @@ class Noobhack:
         self.output_proxy = proxy.Output(self.nethack, self.input_socket)
         self.input_proxy = proxy.Input(self.input_socket, self.nethack) 
 
-        self.input_proxy.register(self._naws_checker)
+        #self.input_proxy.register(self._naws_checker)
 
         # Create an in-memory terminal screen and register it's stream
         # processor with the output proxy.
@@ -379,6 +379,7 @@ if __name__ == "__main__":
         #curses.wrapper(hack.run)
         #cProfile.run("curses.wrapper(hack.run)",'profile')
         listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        listener.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
         listener.bind(('', 2000))
         while True:
           listener.listen(1)
