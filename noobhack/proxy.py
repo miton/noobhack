@@ -64,7 +64,7 @@ class Input:
                to_send.append(key)
         for callback in self.callbacks[:]:
             if not callback(keys):
-               return False
+               return True #return False #we return False when we want to skip the input so this is a bad idea
         logging.debug("input_proxy sending %r to game", ''.join(to_send))
         self.game.sendall(''.join(to_send))
         return True
