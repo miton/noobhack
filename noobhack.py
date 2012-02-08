@@ -130,6 +130,7 @@ class Noobhack:
         self.mode = "game"
         self.playing = False
         self.reloading = False
+        self.brain = None
 
         self.last_input = time()
         self.pending_input = []
@@ -175,7 +176,7 @@ class Noobhack:
         match = re.search("\xff\xfa\x1f(....)\xff\xf0", data)
         if match:
            cols,rows = unpack(">HH",  match.group(1))
-           logging.error("got window size: %dx%d, trying to set it -- %r", rows, cols, match.group(0))
+           logging.error("got window size: %dx%d, trying to set it -- %r", cols, rows, match.group(0))
           
            #self.term.detach(self.stream) #how do we not process the old one? do we need to?
            self.term = vt102.screen((rows, cols), self.options.encoding)
