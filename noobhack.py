@@ -142,6 +142,8 @@ class Noobhack:
         self.output_proxy = proxy.Output(self.nethack, self.input_socket)
         self.input_proxy = proxy.Input(self.input_socket, self.nethack) 
 
+        self.input_proxy.register(self._naws_checker)
+
         # Create an in-memory terminal screen and register it's stream
         # processor with the output proxy.
         self.stream = vt102.stream()
@@ -167,6 +169,7 @@ class Noobhack:
         # Register the `toggle` key to open up the interactive nooback 
         # assistant.
         self.input_proxy.register(self._toggle)
+    
     def _naws_checker(self, data):
         match = re.search("\xff\xfa\x1f(....)\xff\xf0", data)
         if match:
