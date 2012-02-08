@@ -380,7 +380,7 @@ class Noobhack:
 if __name__ == "__main__":
     locale.setlocale(locale.LC_ALL, "")
     
-    logging.basicConfig(filename="noobhack.log",level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(filename="noobhack.log",level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
     try:
         #curses.wrapper(hack.run)
