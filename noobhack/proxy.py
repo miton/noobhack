@@ -63,8 +63,8 @@ class Input:
         for callback in self.callbacks[:]:
             if not callback(keys):
                return False
-
-        self.game.send(''.join(to_send))
+        logging.debug("input_proxy sending %r to game", ''.join(to_send))
+        self.game.sendall(''.join(to_send))
         return True
 
 class Output:
