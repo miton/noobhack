@@ -174,7 +174,7 @@ class Noobhack:
            logging.error("got window size: %dx%d, trying to set it", rows, cols)
           
            #self.term.detach(self.stream) #how do we not process the old one? do we need to?
-           self.term = vt102.screen((rows, cols)), self.options.encoding)
+           self.term = vt102.screen((rows, cols), self.options.encoding)
            self.term.attach(self.stream)
            self.brain.term = self.term
            
