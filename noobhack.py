@@ -175,12 +175,13 @@ class Noobhack:
         match = re.search("\xff\xfa\x1f(....)\xff\xf0", data)
         if match:
            cols,rows = unpack(">HH",  match.group(1))
-           logging.error("got window size: %dx%d, trying to set it", rows, cols)
+           logging.error("got window size: %dx%d, trying to set it -- %r", rows, cols, match.group(0))
           
            #self.term.detach(self.stream) #how do we not process the old one? do we need to?
            self.term = vt102.screen((rows, cols), self.options.encoding)
            self.term.attach(self.stream)
-           self.brain.term = self.term
+           if self.brain:
+              self.brain.term = self.term
         return True
            
     def _quit_or_died_checker(self, data):
