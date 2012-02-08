@@ -156,13 +156,13 @@ class Noobhack:
         # deal with it rather than hunt forever trying to figure out what I'm
         # doing wrong with curses.
         rows, cols = size()
-        self.term = vt102.screen((rows, cols), self.options.encoding)
-        self.term.attach(self.stream)
+        #self.term = vt102.screen((rows, cols), self.options.encoding)
+        #self.term.attach(self.stream)
         
         self.output_proxy.register(self.stream.process)
 
 	
-        self.game = Game(self.term)
+        #self.game = Game(self.term)
 
         self.output_proxy.register(self._restore_game_checker)
         self.output_proxy.register(self._game_started_checker)
