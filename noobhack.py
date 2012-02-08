@@ -15,6 +15,7 @@ import vt102
 import logging
 import telnetlib
 
+from struct import unpack
 from time import time,sleep 
 from noobhack import telnet, process, proxy
 from noobhack.game import player, dungeon, brain, farmer
@@ -166,7 +167,17 @@ class Noobhack:
         # Register the `toggle` key to open up the interactive nooback 
         # assistant.
         self.input_proxy.register(self._toggle)
-
+    def _naws_checker(self, data):
+        match = re.search("\xff\xfa\x1f(....)\xff\xf0", data)
+        if match:
+           cols,rows = unpack(">HH",  match.group(1))
+           logging.error("got window size: %dx%d, trying to set it", rows, cols)
+          
+           #self.term.detach(self.stream) #how do we not process the old one? do we need to?
+           self.term = vt102.screen((rows, cols)), self.options.encoding)
+           self.term.attach(self.stream)
+           self.brain.term = self.term
+           
     def _quit_or_died_checker(self, data):
         """
         Check to see if the player quit or died. In either case, we need to

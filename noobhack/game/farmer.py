@@ -6,8 +6,13 @@ from struct import pack
 from random import random
 from collections import namedtuple
 
-altar_pos = (9,13)
-stash_pos = (8,14)
+#altar_pos = (9,13)
+#stash_pos = (8,14)
+altar_to_stash = 'n'
+stash_to_altar = 'y'
+
+altar_pos = (69,18)
+stash_pos = (70,19)
 
 Spell = namedtuple('Spell', ['key', 'name', 'remembered', 'fail'])
 
@@ -97,13 +102,13 @@ class Farmer:
         if len(self.pending_input) == 0:
            if self.mode == 'kill' or self.mode == 'split':
               if self.cur_pos == altar_pos:
-                 self.pending_input.append('b')
+                 self.pending_input.append(altar_to_stash)
               elif self.cur_pos == stash_pos: 
 	         if self.hungry:
                     self.pending_input.append('e')
                  elif self.altar_free:
                     if random() < .10: #so we don't wait forever with scare monster on altar, plus so we get rations even when just killing
-                       self.pending_input.append('u')
+                       self.pending_input.append(stash_to_altar)
                        logging.debug("in kill/split randomly move to altar")
                     else:
                        self.pending_input.append('.')
@@ -112,7 +117,7 @@ class Farmer:
                     if not self.named and self.sac:
                        self.pending_input.append('C')
                     else:
-                       self.pending_input.append('u')
+                       self.pending_input.append(stash_to_altar)
               else:
                     self.abort = True
                     logging.error('not on stash or altar, aborting! %s', self.cur_pos)
@@ -120,12 +125,12 @@ class Farmer:
            elif self.mode == 'sac':
               if self.cur_pos == stash_pos:
                  if self.altar_free:
-                    self.pending_input.append('u')
+                    self.pending_input.append(stash_to_altar)
                  else:
                     if not self.named:
                        self.pending_input.append('C')
                     else:
-                       self.pending_input.append('u')
+                       self.pending_input.append(stash_to_altar)
               elif self.cur_pos == altar_pos:
                  self.pending_input.append('#')
               else:
@@ -141,7 +146,7 @@ class Farmer:
                    #else:
                    self.pending_input.append('Z')
                 elif self.cur_pos == altar_pos:
-                      self.pending_input.append('b')      
+                      self.pending_input.append(altar_to_stash)      
                 else:
                    self.abort = True
                    logging.error('not on stash or altar in identify, aborting %s', self.cur_pos)
@@ -150,7 +155,7 @@ class Farmer:
                 if self.cur_pos == stash_pos:
                    self.pending_input.append('#')
                 elif self.cur_pos == altar_pos:
-                   self.pending_input.append('b')
+                   self.pending_input.append(altar_to_stash)
                 else:
                    self.abort = True
                    logging.error('not on stash or altar in stash, aborting %s', self.cur_pos)
@@ -159,7 +164,7 @@ class Farmer:
                 if self.cur_pos == stash_pos:
                    self.pending_input.append('Z')
                 elif self.cur_pos == altar_pos:
-                   self.pending_input.append('b')
+                   self.pending_input.append(altar_to_stash)
                 else:
                    self.abort = True
                    logging.error('not on stash or altar in heal, aborting %s', self.cur_pos)
@@ -181,7 +186,7 @@ class Farmer:
            self.divide_count = 0
 
     def _direction_prompt_handler(self, event):
-        self.pending_input.append('u')
+        self.pending_input.append(stash_to_altar)
  
     def _on_altar_handler(self, event):
         pass
@@ -338,7 +343,7 @@ class Farmer:
         self.pending_input.append('a')
 
     def _select_name_prompt_handler(self, event):
-        self.pending_input.append('y')
+        self.pending_input.append(stash_to_altar)
         self.pending_input.append(';')
 
     def _wield_prompt_handler(self, event, value):
