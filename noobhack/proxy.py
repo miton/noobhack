@@ -56,9 +56,11 @@ class Input:
         # iterating over the set, so we need a copy.
         to_send = []
         for key in keys:
+            keep = True
             for callback in self.callbacks[:]:
                if not callback(key):
-                  continue
+                  keep = False
+            if keep: 
                to_send.append(key)
         for callback in self.callbacks[:]:
             if not callback(keys):
