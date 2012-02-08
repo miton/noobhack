@@ -62,9 +62,10 @@ class Input:
                   keep = False
             if keep: 
                to_send.append(key)
-        for callback in self.callbacks[:]:
-            if not callback(keys):
-               return True #return False #we return False when we want to skip the input so this is a bad idea
+        if len(keys) > 1: #otherwise toggle gets multiples so it does nothing
+           for callback in self.callbacks[:]:
+              if not callback(keys):
+                 return True #return False #we return False when we want to skip the input so this is a bad idea
         logging.debug("input_proxy sending %r to game", ''.join(to_send))
         self.game.sendall(''.join(to_send))
         return True
