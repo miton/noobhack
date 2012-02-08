@@ -57,9 +57,12 @@ class Input:
         to_send = []
         for key in keys:
             for callback in self.callbacks[:]:
-               if callback(key) is False:
+               if not callback(key):
                   continue
                to_send.append(key)
+        for callback in self.callback[:]:
+            if not callback(keys):
+               return False
 
         self.game.send(''.join(to_send))
         return True
