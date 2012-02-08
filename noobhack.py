@@ -183,6 +183,7 @@ class Noobhack:
            self.term.attach(self.stream)
            if self.brain:
               self.brain.term = self.term
+           logging.error("done in naws_checker")
         return True
            
     def _quit_or_died_checker(self, data):
@@ -345,11 +346,13 @@ class Noobhack:
         if self.input_socket in available:
             # Do our input logic.
             if not self.input_proxy.proxy():
+               logging.error("input_proxy returned false")
                return False
 
         if self.nethack in available:
             # Do our display logic.
             if not self.output_proxy.proxy():
+               logging.error("output_proxy return false")
                return False
         
         if len(self.pending_input) > 0 and time() > self.last_input + wait_time and self.mode == 'bot' and not self.farmer.abort:
@@ -377,7 +380,7 @@ class Noobhack:
 if __name__ == "__main__":
     locale.setlocale(locale.LC_ALL, "")
     
-    logging.basicConfig(filename="noobhack.log",level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(filename="noobhack.log",level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
     try:
         #curses.wrapper(hack.run)
@@ -391,6 +394,7 @@ if __name__ == "__main__":
           logging.debug("connection from %s", addr)
           hack = Noobhack(conn)
           hack.run(None)
+          logging.debug("connection lost")
     except process.ProcError, e:
         pid, exit = os.wait()
         sys.stdout.write(e.stdout.read())
