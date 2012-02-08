@@ -60,7 +60,7 @@ class Input:
                if not callback(key):
                   continue
                to_send.append(key)
-        for callback in self.callback[:]:
+        for callback in self.callbacks[:]:
             if not callback(keys):
                return False
 
