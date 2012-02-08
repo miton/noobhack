@@ -180,6 +180,7 @@ class Noobhack:
            self.term = vt102.screen((rows, cols), self.options.encoding)
            self.term.attach(self.stream)
            self.brain.term = self.term
+        return True
            
     def _quit_or_died_checker(self, data):
         """
@@ -300,6 +301,8 @@ class Noobhack:
         elif key == "!":
             self.mode = "debug"
             return False
+        return True
+
     def _game(self, window):
         """
         Run the game loop.
