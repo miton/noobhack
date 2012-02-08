@@ -38,7 +38,7 @@ class Farmer:
         self.named = True
         self.sac = False
         self.safe_pray = False
-        self.keep_inv = 'JjCiPwEvbtRyFSpMsBaAmoeXu'
+        self.keep_inv = 'JCiPwEvbtRysuFSghaAmoeX'
         self.unidentified_count = 0 #not likely to be accurate
         self.spell_menu = False
         self.found_spell = False
