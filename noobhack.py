@@ -143,7 +143,7 @@ class Noobhack:
         self.output_proxy = proxy.Output(self.nethack, self.input_socket)
         self.input_proxy = proxy.Input(self.input_socket, self.nethack) 
 
-        #self.input_proxy.register(self._naws_checker)
+        self.input_proxy.register(self._naws_checker)
 
         # Create an in-memory terminal screen and register it's stream
         # processor with the output proxy.
