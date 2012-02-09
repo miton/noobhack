@@ -174,7 +174,7 @@ class Brain:
         for i in xrange(len(self.term.display)-1, -1, -1):
             line = self.term.display[i].translate(ibm).strip()
             if len(line) > 0 and i >= 1:
-            return self.term.display[i-1].translate(ibm).strip()
+               return self.term.display[i-1].translate(ibm).strip()
 
     def _get_first_line(self):
         return self.term.display[0].translate(ibm).strip()
