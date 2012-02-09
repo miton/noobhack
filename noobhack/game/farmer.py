@@ -14,8 +14,8 @@ from collections import namedtuple
 #altar_pos = (69,18)
 #stash_pos = (70,19)
 
-left = (5,5)
-right = (5,6)
+left = (74,11)
+right = (75,11)
 
 left_to_right = 'l'
 right_to_left = 'h'
@@ -52,6 +52,7 @@ class Farmer:
         self.divide_count = 0
 
         self.death_alive = True
+        self.death_spot = None
  
     def listen(self):
         events.dispatcher.add_event_listener('unhungry', self._unhungry_handler)
@@ -111,8 +112,12 @@ class Farmer:
 
         if len(self.pending_input) == 0:
            if self.mode == 'kill':
-              if self.cur_pos in [left, right]:
+              if self.cur_pos in [left, right] and self.death_spot:
                  self.pending_input.append('f')
+              elif not self.death_spot:
+                 self.abort = True
+                 del self.pending_input[:]
+                 logging.error("aborting because death was not found!")
               else:
                  self.abort = True
                  del self.pending_input[:]
@@ -252,11 +257,10 @@ class Farmer:
         self.cur_pos = value
 
     def _check_spot_handler(self, event, value):
-        if value in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@}\'&;:~]':
-           self.altar_free = False
-        else:
-           self.altar_free = True
-    
+        self.death_spot = None
+        if value == '&':
+           self.death_spot = True
+
     def _kill_handler(self, event, value):
         self.kill_total += 1
         self.mode = 'dead'
