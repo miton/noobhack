@@ -260,6 +260,7 @@ class Brain:
               event.dispatch("hp_change", hp)
            if max_hp != self.max_hp:
               self.max_hp = max_hp
+              self.report = True
               event.dispatch("max_hp_change", max_hp)
 
     def _dispatch_score_event(self,data):
