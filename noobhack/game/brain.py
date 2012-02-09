@@ -508,8 +508,8 @@ class Brain:
            logging.error("max_hp: %d turn: %d score: %d", self.max_hp, self.turn, self.score)
 #        self._dispatch_inventory_list_event(data) #covered by menu
         #event.dispatch('check_spot', self.char_at(9,13))	
-        event.dispatch('check_spot', self.char_at(74,11))
-        event.dispatch('check_spot', self.char_at(75,11))
+        event.dispatch('check_spot', (74,11), self.char_at(74,11))
+        event.dispatch('check_spot', (75,11), self.char_at(75,11))
         self._dispatch_waiting_input_event(data)
         
         #fort broken event

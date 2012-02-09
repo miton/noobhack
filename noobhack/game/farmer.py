@@ -256,10 +256,12 @@ class Farmer:
     def _move_handler(self, event, value):
         self.cur_pos = value
 
-    def _check_spot_handler(self, event, value):
-        self.death_spot = None
+    def _check_spot_handler(self, event, pos, value):
+        
         if value == '&':
-           self.death_spot = True
+           self.death_spot = pos
+        elif self.death_spot == pos:
+           self.death_spot = None
 
     def _kill_handler(self, event, value):
         self.kill_total += 1
