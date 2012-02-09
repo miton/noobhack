@@ -32,6 +32,9 @@ class Brain:
         self.hungry = False
         self.menu_type_clear = False
         self.menu_type = None
+        self.score = 0
+        self.max_hp = 0
+        self.report = False
 
     def charisma(self):
         """ Return the player's current charisma """
@@ -249,13 +252,24 @@ class Brain:
 
     def _dispatch_hp_change_event(self):
         line = self._get_last_line()
-        match = re.search(r"HP:(\d+)", line)
+        match = re.search(r"HP:(\d+)\((\d+)\)", line)
         if match is not None:
-           hp = int(match.group(1))
+           hp, max_hp = int(match.group(1)), int(match.group(2))
            if hp != self.hp:
               self.hp = hp
               event.dispatch("hp_change", hp)
-    
+           if max_hp != self.max_hp:
+              self.max_hp = max_hp
+              event.dispatch("max_hp_change", max_hp)
+
+    def _dispatch_score_event(self,data):
+	match = re.search(r"S:(\d+)", data)
+        if match:
+           score = int(match.group(1))
+           if score != self.score:
+              self.score = score
+              event.dispatch("score", score)
+  
     def _dispatch_stoning_event(self, data):
         match = re.search(r"(?:(?:You are slowing down)|(?:Your limbs are stiffening))", data)
         if match:
@@ -265,6 +279,11 @@ class Brain:
         match = re.search(r"You die\.", data)
         if match:
            event.dispatch("died")
+
+    def _dispatch_revive_event(self, data):
+        match = re.search(r"The invisible Death rises from the dead\!", data)
+        if match:
+           event.dispatch("revive")
 
     def _dispatch_hunger_event(self):
         #XXX: findall
@@ -481,6 +500,12 @@ class Brain:
         self._dispatch_you_hit_it_event(data)
         self._dispatch_divides_events(data)
         self._dispatch_direction_prompt_event(data)
+        self._dispatch_revive_event(data)
+        self._dispatch_score_event(data)
+       
+        if self.report:
+           self.report = False
+           logging.error("max_hp: %d turn: %d score: %d", self.max_hp, self.turn, self.score)
 #        self._dispatch_inventory_list_event(data) #covered by menu
         #event.dispatch('check_spot', self.char_at(9,13))	
         event.dispatch('check_spot', self.char_at(69,18))

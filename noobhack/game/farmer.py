@@ -8,11 +8,17 @@ from collections import namedtuple
 
 #altar_pos = (9,13)
 #stash_pos = (8,14)
-altar_to_stash = 'n'
-stash_to_altar = 'y'
+#altar_to_stash = 'n'
+#stash_to_altar = 'y'
 
-altar_pos = (69,18)
-stash_pos = (70,19)
+#altar_pos = (69,18)
+#stash_pos = (70,19)
+
+left = (5,5)
+right = (5,6)
+
+left_to_right = 'l'
+right_to_left = 'h'
 
 Spell = namedtuple('Spell', ['key', 'name', 'remembered', 'fail'])
 
@@ -38,12 +44,14 @@ class Farmer:
         self.named = True
         self.sac = False
         self.safe_pray = False
-        self.keep_inv = 'JCiPwEvbtRysuFSghaAmoeX'
+        self.keep_inv = 'DJcyCiPuINQWGRBtFwxSzgOHjghZaAlmoeXs'
         self.unidentified_count = 0 #not likely to be accurate
         self.spell_menu = False
         self.found_spell = False
         self.heal = False
         self.divide_count = 0
+
+        self.death_alive = True
  
     def listen(self):
         events.dispatcher.add_event_listener('unhungry', self._unhungry_handler)
@@ -90,6 +98,8 @@ class Farmer:
         events.dispatcher.add_event_listener("you_hit_it", self._you_hit_it_handler)
         events.dispatcher.add_event_listener("divides", self._divides_handler)
         events.dispatcher.add_event_listener("direction_prompt", self._direction_prompt_handler)
+        events.dispatcher.add_event_listener("revive", self._revive_handler)
+        events.dispatcher.add_event_listener("score", self._score_handler)
 
         #events.dispatcher.add_event_listener("", self.__handler)
  
@@ -100,75 +110,30 @@ class Farmer:
            return
 
         if len(self.pending_input) == 0:
-           if self.mode == 'kill' or self.mode == 'split':
-              if self.cur_pos == altar_pos:
-                 self.pending_input.append(altar_to_stash)
-              elif self.cur_pos == stash_pos: 
-	         if self.hungry:
-                    self.pending_input.append('e')
-                 elif self.altar_free:
-                    if random() < .10: #so we don't wait forever with scare monster on altar, plus so we get rations even when just killing
-                       self.pending_input.append(stash_to_altar)
-                       logging.debug("in kill/split randomly move to altar")
-                    else:
-                       self.pending_input.append('.')
-                       logging.debug("in kill/split just waiting")
-                 else:
-                    if not self.named and self.sac:
-                       self.pending_input.append('C')
-                    else:
-                       self.pending_input.append(stash_to_altar)
+           if self.mode == 'kill':
+              if self.cur_pos in [left, right]:
+                 self.pending_input.append('f')
               else:
-                    self.abort = True
-                    logging.error('not on stash or altar, aborting! %s', self.cur_pos)
-                    del self.pending_input[:]
-           elif self.mode == 'sac':
-              if self.cur_pos == stash_pos:
-                 if self.altar_free:
-                    self.pending_input.append(stash_to_altar)
-                 else:
-                    if not self.named:
-                       self.pending_input.append('C')
-                    else:
-                       self.pending_input.append(stash_to_altar)
-              elif self.cur_pos == altar_pos:
+                 self.abort = True
+                 del self.pending_input[:]
+                 logging.error("not on left or right in kill, aborting! %s", self.cur_pos)
+           elif self.mode == 'dead':
+              if self.cur_pos == 'left':
+                 self.pending_input.append(left_to_right)
+              elif self.cur_pos == 'right':
+                 self.pending_input.append(right_to_left)
+              else:
+                 self.abort = True
+                 del self.pending_input[:]
+                 logging.error("not on left or right in dead, aborting! %s", self.cur_pos)
+           elif self.mode == 'stash':
+              if self.cur_pos in [left, right]:
                  self.pending_input.append('#')
               else:
                  self.abort = True
-                 logging.error('not on stash or altar (in sac), aborting! %s', self.cur_pos)
                  del self.pending_input[:]
-           elif self.mode == 'identify':
-                if self.cur_pos == stash_pos:
-                   #key = self.spells_names['identify'] #this should be checked later, since we might not have even opened the spells menu before
-                   #if self.spells[key].level[-1] == '*':
-                   #   self.mode = 'stash'
-                   #   self.pending_input.append('.')
-                   #else:
-                   self.pending_input.append('Z')
-                elif self.cur_pos == altar_pos:
-                      self.pending_input.append(altar_to_stash)      
-                else:
-                   self.abort = True
-                   logging.error('not on stash or altar in identify, aborting %s', self.cur_pos)
-                   del self.pending_input[:]
-           elif self.mode == 'stash':
-                if self.cur_pos == stash_pos:
-                   self.pending_input.append('#')
-                elif self.cur_pos == altar_pos:
-                   self.pending_input.append(altar_to_stash)
-                else:
-                   self.abort = True
-                   logging.error('not on stash or altar in stash, aborting %s', self.cur_pos)
-                   del self.pending_input[:]
-           elif self.mode == 'heal':
-                if self.cur_pos == stash_pos:
-                   self.pending_input.append('Z')
-                elif self.cur_pos == altar_pos:
-                   self.pending_input.append(altar_to_stash)
-                else:
-                   self.abort = True
-                   logging.error('not on stash or altar in heal, aborting %s', self.cur_pos)
-
+                 logging.error("not on left or right in stash, aborting! %s", self.cur_pos)
+               
         if len(self.pending_input) > 0:#else:# not an else because we need to process the input we just generated
            if len(self.pending_input) > 1 and self.pending_input[1] != '\r' and len(self.pending_input) != 2:
               #the special cases: name input, pray/loot/offer
@@ -178,7 +143,15 @@ class Farmer:
         else:
            logging.debug("end of waiting_input, nothing to do")
 
+    def _revive_handler(self, event):
+        self.mode = 'kill'
 
+    def _score_handler(self, event, score):
+        if score >= 1072000000:
+           self.abort = True
+           del self.pending_input[:]
+           logging.error("aborting due to score: %d", score)
+           
     def _divides_handler(self, event):
         self.divide_count += 1
         if self.divide_count >= 3 and self.heal:
@@ -186,7 +159,8 @@ class Farmer:
            self.divide_count = 0
 
     def _direction_prompt_handler(self, event):
-        self.pending_input.append(stash_to_altar)
+        direction = {left: 'l', right: 'h'}
+        self.pending_input.append(direction[self.cur_pos])
  
     def _on_altar_handler(self, event):
         pass
@@ -284,20 +258,8 @@ class Farmer:
            self.altar_free = True
     
     def _kill_handler(self, event, value):
-        self.kill_count += 1
         self.kill_total += 1
-        if self.kill_count >= 5 and self.mode == 'kill':
-           if self.sac:
-              self.mode = 'sac'
-              self.kill_count = 0
-           else:
-              self.mode = 'split'
-              self.kill_count = 0
-              self.pending_input.append('w')
-        elif self.mode == 'split':
-           self.mode = 'kill'
-           self.pending_input.append('w')
-        self.named = False
+        self.mode = 'dead'
  
     def _sacrifice_prompt_handler(self, event, value):
         if value in self.failed_sacs:
