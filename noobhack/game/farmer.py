@@ -123,9 +123,9 @@ class Farmer:
                  del self.pending_input[:]
                  logging.error("not on left or right in kill, aborting! %s", self.cur_pos)
            elif self.mode == 'dead':
-              if self.cur_pos == 'left':
+              if self.cur_pos == left:
                  self.pending_input.append(left_to_right)
-              elif self.cur_pos == 'right':
+              elif self.cur_pos == right:
                  self.pending_input.append(right_to_left)
               else:
                  self.abort = True
