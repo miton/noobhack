@@ -288,7 +288,7 @@ class Farmer:
            self.safe_pray = True
 
     def _eat_prompt_handler(self, event, value):
-        match = re.search(r"food ration", value)
+        match = re.search(r"(?:food ration)|(?:pancake)|(?:cram ration)|(?:C-ration)|(?:K-ration)|(?:candy bar)|(?:lembas wafers)", value)
         if match:
            self.pending_input.append('y')
            self.hungry = False # does unhungry_handler work?

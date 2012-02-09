@@ -109,7 +109,7 @@ class Brain:
              event.dispatch("sacrifice_response", match.group(1))
 
     def _dispatch_eat_prompt_event(self, data):
-         match = re.search("There (?:is a|are \d+) (.*?) here; eat (?:it|one)?", data)
+         match = re.search("There (?:is an?|are \d+) (.*?) here; eat (?:it|one)?", data)
          if match is not None:
               event.dispatch("eat_prompt", match.group(1))
          match = re.search(r"What do you want to eat\? (\[(.+?) or \?\*\])?", data)
