@@ -169,6 +169,12 @@ class Brain:
             if len(line) > 0:
                 break
         return line
+    
+    def _get_next_last_line(self):
+        for i in xrange(len(self.term.display)-1, -1, -1):
+            line = self.term.display[i].translate(ibm).strip()
+            if len(line) > 0 and i >= 1:
+            return self.term.display[i-1].translate(ibm).strip()
 
     def _get_first_line(self):
         return self.term.display[0].translate(ibm).strip()
@@ -264,7 +270,8 @@ class Brain:
               event.dispatch("max_hp_change", max_hp)
 
     def _dispatch_score_event(self,data):
-	match = re.search(r"S:(\d+)", data)
+        line = self._get_next_last_line() # when score is large it is not fully written so scrape it instead
+        match = re.search(r"S:(\d+)", line)
         if match:
            score = int(match.group(1))
            if score != self.score:

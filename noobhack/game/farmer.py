@@ -288,7 +288,12 @@ class Farmer:
            self.safe_pray = True
 
     def _eat_prompt_handler(self, event, value):
-        self.pending_input.append('n')
+        match = re.search(r"food ration", value)
+        if match:
+           self.pending_input.append('y')
+           self.hungry = False # does unhungry_handler work?
+        else:
+           self.pending_input.append('n')
 
     def _eat_prompt_inv_handler(self, event, value):
         for c in value:
