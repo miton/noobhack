@@ -53,6 +53,7 @@ class Farmer:
 
         self.death_alive = True
         self.death_spot = None
+        self.start_score = None
  
     def listen(self):
         events.dispatcher.add_event_listener('unhungry', self._unhungry_handler)
@@ -154,6 +155,12 @@ class Farmer:
         self.mode = 'kill'
 
     def _score_handler(self, event, score):
+        if not self.start_score:
+           self.start_score = score
+        elif score >= start_score + 2500000:
+           self.abort = True
+           del self.pending_input[:]
+           logging.error("aborting due to +2500000 score, start: %d end: %d", self.start_score, score)
         if score >= 1072000000:
            self.abort = True
            del self.pending_input[:]

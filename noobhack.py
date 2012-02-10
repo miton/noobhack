@@ -302,6 +302,7 @@ class Noobhack:
                self.mode = "bot"
                del self.pending_input[:]
                self.farmer.abort = False
+               self.farmer.start_score = None
                return False
         elif key == "!":
             self.mode = "debug"
