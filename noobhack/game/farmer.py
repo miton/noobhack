@@ -157,7 +157,7 @@ class Farmer:
     def _score_handler(self, event, score):
         if not self.start_score:
            self.start_score = score
-        elif score >= start_score + 2500000:
+        elif score >= self.start_score + 2500000:
            self.abort = True
            del self.pending_input[:]
            logging.error("aborting due to +2500000 score, start: %d end: %d", self.start_score, score)
